@@ -22,7 +22,7 @@ const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) -> Result<Box<FnMut() -> bool>, String> {
   let back_buffer = Framebuffer::default();
-  let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<Flat, Dim2, RGBA32F>, ()>::new((w, h), 0).unwrap();
+  let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
 
   let chess_program = new_chess_program().unwrap();
   let color_program = new_const_color_program().unwrap();
