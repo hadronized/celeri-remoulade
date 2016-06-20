@@ -9,6 +9,7 @@ use std::env;
 
 mod demo;
 mod shaders;
+mod parts;
 
 const DEMO_TITLE: &'static str = "wip";
 

@@ -1,60 +1,17 @@
 use ion::anim::{AnimParam, ControlPoint, Interpolation, Sampler};
 use ion::entity::Entity;
-use ion::resource::ResourceManager;
-use ion::shader::get_program;
 use ion::transform::{Position, Transform};
-use luminance::{Dim2, Flat, M44, Mode, RGB8UI};
-use luminance_gl::gl33::{Framebuffer, Pipeline, Program, RenderCommand, ShadingCommand, Slot
-                       , Tessellation, Uniform};
-
-/// Part containing all the objects related to mountains.
-pub struct Mountains {
-  framebuffer: Framebuffer<Flat, Dim2, (), ()>,
-  program: Program<MountainUniforms>,
-  lines: Vec<Entity<Tessellation>>,
-}
-
-impl Mountains {
-  pub fn new(manager: &mut ResourceManager, w: u32, h: u32) -> Self {
-    let lines = [
-      create_mountain_line(10, 0.1, 1., 100, 1.)
-    ].into_iter().enumerate().map(create_mountain_entity).collect();
-
-    Mountains {
-      framebuffer: Framebuffer::default(),
-      program: get_program(&mut manager.program_manager, "std", false, |proxy| {
-        let proj = try!(proxy.uniform("proj"));
-        let view = try!(proxy.uniform("view"));
-        let inst = try!(proxy.uniform("inst"));
-        let color = try!(proxy.uniform("color"));
-
-        Ok(MountainUniforms {
-          proj: proj,
-          view: view,
-          inst: inst,
-          color: color
-        })
-      }).unwrap(),
-      lines: lines
-    }
-  }
-}
-
-pub struct MountainUniforms {
-  proj: Uniform<M44>,
-  view: Uniform<M44>,
-  inst: Uniform<M44>,
-  color: Uniform<[f32; 3]>
-}
+use luminance::Mode;
+use luminance_gl::gl33::Tessellation;
 
 // Create a mountain as entity.
-fn create_mountain_entity((i, line): (usize, &Vec<[f32; 3]>)) -> Entity<Tessellation> {
-  let transform = Transform::default().translate(Position::new(0.1 * i as f32, 0., 0.));
+pub fn create_mountain_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Tessellation> {
+  let transform = Transform::default().translate(Position::new(0.1 * seed, 0., 0.));
   Entity::new(Tessellation::new(Mode::TriangleStrip, line, None), transform)
 }
 
 // Create a line of a mountain.
-fn create_mountain_line(points_in: usize, gap: f32, smooth: f32, points_out: usize, seed: f32) -> Vec<[f32; 3]> {
+pub fn create_mountain_line(points_in: usize, gap: f32, smooth: f32, points_out: usize, seed: f32) -> Vec<[f32; 3]> {
   assert!(points_in <= points_out);
 
   deb!("creating mountain line: points_in={}, gap={}, smooth={}, points_out={}, seed={}", points_in, gap, smooth, points_out, seed);
