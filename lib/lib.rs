@@ -7,7 +7,6 @@ extern crate rustc_serialize;
 extern crate time;
 
 pub mod anim;
-pub mod camera;
 pub mod device;
 pub mod entity;
 pub mod objects;
