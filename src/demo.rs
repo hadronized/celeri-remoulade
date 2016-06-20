@@ -1,3 +1,4 @@
+use ion::device::Device;
 use ion::entity::*;
 use ion::objects::{new_cube, new_plane};
 use ion::projection::perspective;
@@ -21,6 +22,8 @@ const CAMERA_FORWARD_SENSITIVITY: f32 = 0.1;
 const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) -> Result<Box<FnMut() -> bool>, String> {
+  let mut dev = Device::new();
+
   let back_buffer = Framebuffer::default();
   let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
 
@@ -31,7 +34,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
   let mut camera = Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default().repos(Position::new(0., -0.2, -4.)));
 
   let plane = Entity::new(new_plane(), Transform::default().reorient(X_AXIS, -f32::consts::FRAC_PI_2).rescale(Scale::uni(10.)));
-  let cube = Entity::new(new_cube(), Transform::default().translate(Translation::new(0., 2., 0.)));
+  let mut cube = Entity::new(new_cube(), Transform::default().translate(Translation::new(0., 2., 0.)));
 
   // set camera projection
   chess_program.update(|&(ref proj, _, _)| {
@@ -77,6 +80,11 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
         handle_camera_keys(&mut camera, key);
       }
     }
+
+    dev.recompute_playback_cursor();
+    let t = dev.playback_cursor();
+
+    cube.transform = cube.transform.reorient(X_AXIS, t);
 
     // TODO: find a way to send to several programs at once
     // update the camera
