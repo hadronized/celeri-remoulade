@@ -34,8 +34,8 @@ pub type ConstColorProgram<'a> = Program<(Uniform<M44>,
 pub fn new_const_color_program<'a>() -> Result<ConstColorProgram<'a>, ProgramError> {
   new_program(None, CONST_COLOR_VS, None, CONST_COLOR_FS, |proxy| {
     let proj = try!(proxy.uniform("proj"));
-    let view = Transform::as_uniform(try!(proxy.uniform("view")).into());
-    let inst = Transform::as_uniform(try!(proxy.uniform("inst")).into());
+    let view = Transform::as_view_uniform(try!(proxy.uniform("view")));
+    let inst = Transform::as_inst_uniform(try!(proxy.uniform("inst")));
     let color = try!(proxy.uniform("color"));
 
     Ok((proj, view, inst, color))

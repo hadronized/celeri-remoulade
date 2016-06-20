@@ -27,7 +27,7 @@ impl Transform {
   }
 
   pub fn orient(self, axis: Axis, phi: f32) -> Self {
-    Transform { orientation:  UnitQuat::new(normalize(&axis) * phi) * self.orientation, .. self }
+    Transform { orientation: self.orientation * UnitQuat::new(normalize(&axis) * phi), .. self }
   }
 
   pub fn set_uniform_scale(self, scale: f32) -> Self {
@@ -48,13 +48,22 @@ impl Transform {
     Transform { scale: new_scale, .. self }
   }
 
-  pub fn to_mat(&self) -> Mat4<f32> {
+  pub fn to_inst_mat(&self) -> Mat4<f32> {
     translation_matrix(self.translation) * self.scale.to_mat() * self.orientation.to_rot().to_homogeneous()
   }
 
-  pub fn as_uniform<'a>(u: Uniform<M44>) -> UniformUpdate<'a, Self> {
+  pub fn to_view_mat(&self) -> Mat4<f32> {
+    self.orientation.to_rot().to_homogeneous() * translation_matrix(self.translation) * self.scale.to_mat()
+  }
+
+  pub fn as_inst_uniform<'a>(u: Uniform<M44>) -> UniformUpdate<'a, Self> {
     let u: UniformUpdate<M44> = u.into();
-    u.contramap(|transform: Transform| { *transform.to_mat().as_ref() })
+    u.contramap(|transform: Transform| { *transform.to_inst_mat().as_ref() })
+  }
+
+  pub fn as_view_uniform<'a>(u: Uniform<M44>) -> UniformUpdate<'a, Self> {
+    let u: UniformUpdate<M44> = u.into();
+    u.contramap(|transform: Transform| { *transform.to_view_mat().as_ref() })
   }
 }
 
