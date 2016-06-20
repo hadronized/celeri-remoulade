@@ -56,6 +56,7 @@ pub fn new_line(points_in: usize, gap: f32, smooth: f32, points_out: usize, seed
   let mut vertices = Vec::with_capacity(points_out);
 
   for ((x,y),z) in x_points.into_iter().zip(y_points).zip(z_points) {
+    deb!("generated line: {:?}", [x, y, z]);
     vertices.push([x, y, z]);
   }
 
