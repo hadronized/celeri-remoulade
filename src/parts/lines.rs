@@ -5,12 +5,12 @@ use luminance::Mode;
 use luminance_gl::gl33::Tessellation;
 use procedural::noise2;
 
-pub fn create_line_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Tessellation> {
+pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Tessellation> {
   let transform = Transform::default().translate(Position::new(0.1 * seed, 0., 0.));
   Entity::new(Tessellation::new(Mode::TriangleStrip, line, None), transform)
 }
 
-pub fn create_line(points_in: usize, gap: f32, smooth: f32, points_out: usize, seed: f32) -> Vec<[f32; 3]> {
+pub fn new_line(points_in: usize, gap: f32, smooth: f32, points_out: usize, seed: f32) -> Vec<[f32; 3]> {
   assert!(points_in <= points_out);
 
   deb!("creating line stuff: points_in={}, gap={}, smooth={}, points_out={}, seed={}", points_in, gap, smooth, points_out, seed);
