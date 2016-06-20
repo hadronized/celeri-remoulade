@@ -1,5 +1,6 @@
 use luminance::linear::M44;
 use luminance::shader::uniform::UniformUpdate;
+use luminance_gl::gl33::Uniform;
 use nalgebra::{ToHomogeneous, UnitQuat, normalize};
 use std::default::Default;
 
@@ -51,8 +52,9 @@ impl Transform {
     self.scale.to_mat() * self.orientation.to_rot().to_homogeneous() * translation_matrix(self.translation)
   }
 
-  pub fn as_uniform(uniform: UniformUpdate<M44>) -> UniformUpdate<Self> {
-    uniform.contramap(|transform: Transform| { *transform.to_mat().as_ref() })
+  pub fn as_uniform<'a>(u: Uniform<M44>) -> UniformUpdate<'a, Self> {
+    let u: UniformUpdate<M44> = u.into();
+    u.contramap(|transform: Transform| { *transform.to_mat().as_ref() })
   }
 }
 

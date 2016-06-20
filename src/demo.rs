@@ -17,6 +17,8 @@ const ZFAR: f32 = 200.;
 const CAMERA_YAW_SENSITIVITY: f32 = 0.01;
 const CAMERA_PITCH_SENSITIVITY: f32 = 0.01;
 const CAMERA_STRAFE_SENSITIVITY: f32 = 0.1;
+const CAMERA_FORWARD_SENSITIVITY: f32 = 0.1;
+const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) -> Result<Box<FnMut() -> bool>, String> {
   let back_buffer = Framebuffer::default();
@@ -161,22 +163,22 @@ fn handle_camera_keys(camera: &mut Entity<M44>, key: Key) {
       camera.transform = camera.translate(right);
     },
     Key::W => {
-      let forward = camera.transform.orientation.inv_rotate(&(Z_AXIS * CAMERA_STRAFE_SENSITIVITY));
+      let forward = camera.transform.orientation.inv_rotate(&(Z_AXIS * CAMERA_FORWARD_SENSITIVITY));
       deb!("camera: {:?}", camera.translation);
       camera.transform = camera.translate(forward);
     },
     Key::S => {
-      let backward = camera.transform.orientation.inv_rotate(&(Z_AXIS * -CAMERA_STRAFE_SENSITIVITY));
+      let backward = camera.transform.orientation.inv_rotate(&(Z_AXIS * -CAMERA_FORWARD_SENSITIVITY));
       deb!("camera: {:?}", camera.translation);
       camera.transform = camera.translate(backward);
     },
     Key::R => {
-      let upward = camera.transform.orientation.inv_rotate(&(Y_AXIS * -CAMERA_STRAFE_SENSITIVITY));
+      let upward = camera.transform.orientation.inv_rotate(&(Y_AXIS * -CAMERA_UPWARD_SENSITIVITY));
       deb!("camera: {:?}", camera.translation);
       camera.transform = camera.translate(upward);
     },
     Key::F => {
-      let downward = camera.transform.orientation.inv_rotate(&(Y_AXIS * CAMERA_STRAFE_SENSITIVITY));
+      let downward = camera.transform.orientation.inv_rotate(&(Y_AXIS * CAMERA_UPWARD_SENSITIVITY));
       deb!("camera: {:?}", camera.translation);
       camera.transform = camera.translate(downward);
     },

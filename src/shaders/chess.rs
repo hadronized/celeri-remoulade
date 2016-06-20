@@ -38,8 +38,8 @@ pub type ChessProgram<'a> = Program<(Uniform<M44>,
 pub fn new_chess_program<'a>() -> Result<ChessProgram<'a>, ProgramError> {
   new_program(None, CHESS_VS, None, CHESS_FS, |proxy| {
     let proj = try!(proxy.uniform("proj"));
-    let view = Transform::as_uniform(try!(proxy.uniform("view")).into());
-    let inst = Transform::as_uniform(try!(proxy.uniform("inst")).into());
+    let view = Transform::as_uniform(try!(proxy.uniform("view")));
+    let inst = Transform::as_uniform(try!(proxy.uniform("inst")));
 
     Ok((proj, view, inst))
   })
