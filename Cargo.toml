@@ -1,0 +1,24 @@
+[package]
+name = "evoke16"
+version = "0.1.0"
+authors = ["Dimitri Sabadie <dimitri.sabadie@gmail.com>"]
+
+[lib]
+name = "ion"
+path = "lib/lib.rs"
+doc = true
+
+[features]
+# No feature by default.
+default = []
+# Switch on to enable resource hotloading.
+hotload = []
+
+[dependencies]
+luminance = { path = "../../luminance-rs" }
+luminance-gl = { path = "../../luminance-gl-rs" }
+gl = "0.5.2"
+glfw = "0.3.0"
+nalgebra = "0.6.0"
+rustc-serialize = "0.3.18"
+time = "0.1.35"
