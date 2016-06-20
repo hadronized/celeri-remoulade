@@ -3,18 +3,17 @@ use ion::entity::Entity;
 use ion::transform::{Position, Transform};
 use luminance::Mode;
 use luminance_gl::gl33::Tessellation;
+use procedural::noise2;
 
-// Create a mountain as entity.
-pub fn create_mountain_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Tessellation> {
+pub fn create_line_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Tessellation> {
   let transform = Transform::default().translate(Position::new(0.1 * seed, 0., 0.));
   Entity::new(Tessellation::new(Mode::TriangleStrip, line, None), transform)
 }
 
-// Create a line of a mountain.
-pub fn create_mountain_line(points_in: usize, gap: f32, smooth: f32, points_out: usize, seed: f32) -> Vec<[f32; 3]> {
+pub fn create_line(points_in: usize, gap: f32, smooth: f32, points_out: usize, seed: f32) -> Vec<[f32; 3]> {
   assert!(points_in <= points_out);
 
-  deb!("creating mountain line: points_in={}, gap={}, smooth={}, points_out={}, seed={}", points_in, gap, smooth, points_out, seed);
+  deb!("creating line stuff: points_in={}, gap={}, smooth={}, points_out={}, seed={}", points_in, gap, smooth, points_out, seed);
 
   // create control points
   let mut x_cps = Vec::with_capacity(points_in);
@@ -58,9 +57,4 @@ pub fn create_mountain_line(points_in: usize, gap: f32, smooth: f32, points_out:
   }
 
   vertices
-}
-
-fn noise2(x: f32, y: f32) -> f32 {
-  let d = (x * 12.9898 + y * 78.233) * 43758.5453;
-  return f32::fract(f32::sin(d));
 }
