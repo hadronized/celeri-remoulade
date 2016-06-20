@@ -27,7 +27,7 @@ impl Transform {
   }
 
   pub fn orient(self, axis: Axis, phi: f32) -> Self {
-    Transform { orientation: self.orientation * UnitQuat::new(normalize(&axis) * phi), .. self }
+    Transform { orientation: UnitQuat::new(normalize(&axis) * phi) * self.orientation, .. self }
   }
 
   pub fn set_uniform_scale(self, scale: f32) -> Self {
