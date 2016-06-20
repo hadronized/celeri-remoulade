@@ -39,7 +39,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
 
   let plane = Entity::new(new_plane(), Transform::default().reorient(X_AXIS, -f32::consts::FRAC_PI_2).rescale(Scale::uni(10.)));
   let mut cube = Entity::new(new_cube(), Transform::default().translate(Translation::new(0., 2., 0.)));
-  let line = new_line_entity(&new_line(10, 1., 1., 10, 0.), 0.);
+  let line = new_line_entity(&new_line(10, 1., 0.1, 10, 0.), 0.);
 
   // set camera projection
   chess_program.update(|&(ref proj, _, _)| {
@@ -103,14 +103,14 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
     // render the default scene into the chromatic aberration buffer
     Pipeline::new(&chromatic_aberration_buffer, [0., 0., 0., 1.], vec![
       &ShadingCommand::new(&chess_program, |_|{}, vec![
-        //RenderCommand::new(None,
-        //                   true,
-        //                   |&(_, _, ref inst): &(_, _, UniformUpdate<Transform>)| {
-        //                     inst.update(plane.transform);
-        //                   },
-        //                   &plane.object,
-        //                   1,
-        //                   None)
+        RenderCommand::new(None,
+                           true,
+                           |&(_, _, ref inst): &(_, _, UniformUpdate<Transform>)| {
+                             inst.update(plane.transform);
+                           },
+                           &plane.object,
+                           1,
+                           None)
       ]),
       &ShadingCommand::new(&color_program, |_|{}, vec![
         RenderCommand::new(None,
@@ -130,7 +130,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
                            },
                            &line.object,
                            1,
-                           None)
+                           Some(3.))
       ])
     ]).run();
 

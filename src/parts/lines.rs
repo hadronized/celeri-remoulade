@@ -8,7 +8,7 @@ use procedural::noise2;
 pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Tessellation> {
   let seed = seed + 1.;
   let transform = Transform::default().translate(Position::new(0.1 * seed, 0., 0.));
-  Entity::new(Tessellation::new(Mode::TriangleStrip, line, None), transform)
+  Entity::new(Tessellation::new(Mode::LineStrip, line, None), transform)
 }
 
 pub fn new_line(points_in: usize, gap: f32, smooth: f32, points_out: usize, seed: f32) -> Vec<[f32; 3]> {
@@ -44,9 +44,9 @@ pub fn new_line(points_in: usize, gap: f32, smooth: f32, points_out: usize, seed
   let mut x_sampler = Sampler::new();
   let mut y_sampler = Sampler::new();
   let mut z_sampler = Sampler::new();
-  let gap_out = gap / points_out as f32 / points_in as f32;
+  let gap_out = gap * points_in as f32 / points_out as f32;
 
-  for i in 0..points_out {
+  for i in 0..points_out-1 {
     let t = i as f32 * gap_out;
     x_points.push(x_sampler.sample(t, &x_curve, false).unwrap());
     y_points.push(y_sampler.sample(t, &y_curve, false).unwrap());
