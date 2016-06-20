@@ -49,7 +49,7 @@ impl Transform {
   }
 
   pub fn to_mat(&self) -> Mat4<f32> {
-    self.scale.to_mat() * self.orientation.to_rot().to_homogeneous() * translation_matrix(self.translation)
+    translation_matrix(self.translation) * self.scale.to_mat() * self.orientation.to_rot().to_homogeneous()
   }
 
   pub fn as_uniform<'a>(u: Uniform<M44>) -> UniformUpdate<'a, Self> {

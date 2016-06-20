@@ -84,7 +84,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
     dev.recompute_playback_cursor();
     let t = dev.playback_cursor();
 
-    cube.transform = cube.transform.reorient(X_AXIS, t);
+    cube.transform = cube.transform.reorient(Axis::new(1., 1., 1.), t);
 
     // TODO: find a way to send to several programs at once
     // update the camera
