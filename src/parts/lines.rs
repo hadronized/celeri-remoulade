@@ -42,18 +42,22 @@ pub fn new_line(points_in: usize, points_out: usize, gap: f32, smooth: f32, seed
   let mut b_sampler = Sampler::new();
   let gap_out = gap * (points_in - 1) as f32 / (points_out - 1) as f32;
 
-  for i in 0..points_out {
-    deb!("i={}", i as f32 * gap_out);
-    let t = i as f32 * gap_out;
-    x_points.push(a_sampler.sample(t, &a_curve, false).unwrap());
-    y_points.push(b_sampler.sample(t, &b_curve, false).unwrap());
-    z_points.push(t);
+  let mut t = 0.;
+  loop {
+    if let (Some(x), Some(y)) = (a_sampler.sample(t, &a_curve, false), b_sampler.sample(t, &b_curve, false)) {
+      x_points.push(x);
+      y_points.push(y);
+      z_points.push(t);
+    } else {
+      break;
+    }
+
+    t += gap_out;
   }
 
   let mut vertices = Vec::with_capacity(points_out);
 
   for ((x,y),z) in x_points.into_iter().zip(y_points).zip(z_points) {
-    deb!("generated line: {:?}", [x, y, z]);
     vertices.push([x, y, z]);
   }
 
