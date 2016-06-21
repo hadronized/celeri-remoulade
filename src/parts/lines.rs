@@ -11,46 +11,43 @@ pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Tessellation> 
   Entity::new(Tessellation::new(Mode::LineStrip, line, None), transform)
 }
 
-pub fn new_line(points_in: usize, gap: f32, smooth: f32, points_out: usize, seed: f32) -> Vec<[f32; 3]> {
-  assert!(points_in <= points_out);
+pub fn new_line(points_in: usize, points_out: usize, gap: f32, smooth: f32, seed: f32) -> Vec<[f32; 3]> {
+  assert!(points_in <= points_out && points_in > 1);
 
-  deb!("creating line stuff: points_in={}, gap={}, smooth={}, points_out={}, seed={}", points_in, gap, smooth, points_out, seed);
+  deb!("creating line stuff: points_in={}, points_out={}, gap={}, smooth={}, seed={}", points_in, points_out, gap, smooth, seed);
 
   let seed = seed + 1.;
 
   // create control points
-  let mut x_cps = Vec::with_capacity(points_in);
-  let mut y_cps = Vec::with_capacity(points_in);
-  let mut z_cps = Vec::with_capacity(points_in);
+  let mut a_cps = Vec::with_capacity(points_in);
+  let mut b_cps = Vec::with_capacity(points_in);
 
   for i in 0..points_in {
     let t = i as f32 * gap;
-    let y = smooth * noise2(t + seed, -f32::fract(t) * i as f32 * seed);
-    let z = smooth * noise2(-y * seed, t - seed);
+    let a = smooth * noise2(t + seed, -f32::fract(t) * i as f32 * seed);
+    let b = smooth * noise2(-t * seed, t - seed);
 
-    x_cps.push(ControlPoint::new(t, Interpolation::Cosine, t));
-    y_cps.push(ControlPoint::new(t, Interpolation::Cosine, y));
-    z_cps.push(ControlPoint::new(t, Interpolation::Cosine, z));
+    a_cps.push(ControlPoint::new(t, Interpolation::Cosine, a));
+    b_cps.push(ControlPoint::new(t, Interpolation::Cosine, b));
   }
 
-  let x_curve = AnimParam::new(x_cps);
-  let y_curve = AnimParam::new(y_cps);
-  let z_curve = AnimParam::new(z_cps);
+  let a_curve = AnimParam::new(a_cps);
+  let b_curve = AnimParam::new(b_cps);
 
   // create points by smoothing
   let mut x_points = Vec::with_capacity(points_out);
   let mut y_points = Vec::with_capacity(points_out);
   let mut z_points = Vec::with_capacity(points_out);
-  let mut x_sampler = Sampler::new();
-  let mut y_sampler = Sampler::new();
-  let mut z_sampler = Sampler::new();
-  let gap_out = gap * points_in as f32 / points_out as f32;
+  let mut a_sampler = Sampler::new();
+  let mut b_sampler = Sampler::new();
+  let gap_out = gap * (points_in - 1) as f32 / (points_out - 1) as f32;
 
-  for i in 0..points_out-1 {
+  for i in 0..points_out {
+    deb!("i={}", i as f32 * gap_out);
     let t = i as f32 * gap_out;
-    x_points.push(x_sampler.sample(t, &x_curve, false).unwrap());
-    y_points.push(y_sampler.sample(t, &y_curve, false).unwrap());
-    z_points.push(z_sampler.sample(t, &z_curve, false).unwrap());
+    x_points.push(a_sampler.sample(t, &a_curve, false).unwrap());
+    y_points.push(b_sampler.sample(t, &b_curve, false).unwrap());
+    z_points.push(t);
   }
 
   let mut vertices = Vec::with_capacity(points_out);
