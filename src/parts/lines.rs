@@ -1,20 +1,36 @@
 use ion::anim::{AnimParam, ControlPoint, Interpolation, Sampler};
 use ion::entity::Entity;
 use ion::transform::{Position, Transform};
-use luminance::Mode;
-use luminance_gl::gl33::Tessellation;
+use luminance::{Mode, UniformUpdate};
+use luminance_gl::gl33::{RenderCommand, Tessellation, Uniform};
 use procedural::noise2;
+
+use shaders::const_color::ConstColorUniforms;
 
 pub struct Line {
   pub tessellation: Tessellation,
   pub color: [f32; 3]
 }
 
+impl Line {
+  pub fn render_cmd<'a>(line: &'a Entity<Self>) -> RenderCommand<'a, ConstColorUniforms> {
+    RenderCommand::new(None,
+                       true,
+                       move |&(_, _, ref inst, ref color): &(_, _, UniformUpdate<Transform>, Uniform<[f32; 3]>)| {
+                         inst.update(line.transform);
+                         color.update(line.object.color);
+                       },
+                       &line.object.tessellation,
+                       1,
+                       Some(3.))
+  }
+}
+
 pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Line> {
   let seed = seed + 1.;
 
   let transform = Transform::default().translate(Position::new(0.1 * seed, 0., 0.));
-  let color = [seed.cos(), seed.sin(), seed.powf(2.).fract()];
+  let color = [seed.cos().abs(), seed.sin().abs(), seed.powf(2.).abs().fract()];
   let line = Line {
     tessellation: Tessellation::new(Mode::LineStrip, line, None),
     color: color

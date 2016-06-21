@@ -26,10 +26,9 @@ void main() {\n\
   frag = vec4((v_co * .25 + .75) * color, 1.);\n\
 }";
 
-pub type ConstColorProgram<'a> = Program<(Uniform<M44>,
-                                 UniformUpdate<'a, Transform>,
-                                 UniformUpdate<'a, Transform>,
-                                 Uniform<[f32; 3]>)>;
+pub type ConstColorUniforms<'a> = (Uniform<M44>, UniformUpdate<'a, Transform>, UniformUpdate<'a, Transform>, Uniform<[f32; 3]>);
+
+pub type ConstColorProgram<'a> = Program<ConstColorUniforms<'a>>;
 
 pub fn new_const_color_program<'a>() -> Result<ConstColorProgram<'a>, ProgramError> {
   new_program(None, CONST_COLOR_VS, None, CONST_COLOR_FS, |proxy| {
