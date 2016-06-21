@@ -39,7 +39,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
 
   let plane = Entity::new(new_plane(), Transform::default().reorient(X_AXIS, -f32::consts::FRAC_PI_2).rescale(Scale::uni(10.)));
   let mut cube = Entity::new(new_cube(), Transform::default().translate(Translation::new(0., 2., 0.)));
-  let line = new_line_entity(&new_line(10, 10, 1., 0.1, 0.), 0.);
+  let line = new_line_entity(&new_line(10, 100, 1., 0.1, 0.), 0.);
 
   // set camera projection
   chess_program.update(|&(ref proj, _, _)| {
