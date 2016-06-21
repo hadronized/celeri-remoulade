@@ -9,7 +9,8 @@ use shaders::const_color::ConstColorUniforms;
 
 pub struct Line {
   pub tessellation: Tessellation,
-  pub color: [f32; 3]
+  pub color: [f32; 3],
+  pub size: f32
 }
 
 impl Line {
@@ -22,7 +23,7 @@ impl Line {
                        },
                        &line.object.tessellation,
                        1,
-                       Some(3.))
+                       Some(line.object.size))
   }
 }
 
@@ -30,10 +31,11 @@ pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Line> {
   let seed = seed + 1.;
 
   let transform = Transform::default().translate(Position::new(0.1 * seed, 0., 0.));
-  let color = [seed.cos().abs(), seed.sin().abs(), seed.powf(2.).abs().fract()]; // FIXME: use color_palette instead
+  let color = color_palette([0.5, 0.5, 0.5], [0.8, 0.5, 0.2], [0.3, 0.6, 0.2], [0.5, 0.5, 1.], seed*0.05);
   let line = Line {
     tessellation: Tessellation::new(Mode::LineStrip, line, None),
-    color: color
+    color: color,
+    size: seed.sin() + 3.
   };
 
   Entity::new(line, transform)
