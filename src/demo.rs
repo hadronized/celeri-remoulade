@@ -126,9 +126,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
                            true,
                            |&(_, _, ref inst, ref color): &(_, _, UniformUpdate<Transform>, Uniform<[f32; 3]>)| {
                              inst.update(line.transform);
-                             color.update([t.sin(), 0.5 * t.sin(), 0.5 * t.cos()]);
+                             color.update(line.object.color);
                            },
-                           &line.object,
+                           &line.object.tessellation,
                            1,
                            Some(3.))
       ])
