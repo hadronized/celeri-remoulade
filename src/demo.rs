@@ -2,7 +2,7 @@ use ion::device::Device;
 use ion::entity::*;
 use ion::objects::{new_cube, new_plane};
 use ion::projection::perspective;
-use ion::window::{Action, Key, Keyboard, Mouse, MouseButton, MouseMove};
+use ion::window::{Action, Key, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
 use luminance::{Dim2, Flat, M44, RGBA32F, UniformUpdate};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot, Uniform};
 use nalgebra::Rotate;
@@ -26,7 +26,7 @@ const CAMERA_STRAFE_SENSITIVITY: f32 = 0.1;
 const CAMERA_FORWARD_SENSITIVITY: f32 = 0.1;
 const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 
-pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) -> Result<Box<FnMut() -> bool>, String> {
+pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, scroll: Scroll) -> Result<Box<FnMut() -> bool>, String> {
   let mut dev = Device::new();
 
   let back_buffer = Framebuffer::default();
@@ -36,6 +36,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
   let color_program = new_const_color_program().unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
   let lines_program = new_lines_program().unwrap();
+  let mut line_jitter = [1., 1.];
 
   let mut camera = Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default().repos(Position::new(0., -0.2, -4.)));
 
@@ -64,6 +65,11 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
   let mut cursor_right_down = false;
 
   Ok(Box::new(move || {
+    // FIXME: debug; use to alter the line jitter
+    while let Ok(scroll) = scroll.try_recv() {
+      line_jitter = [(line_jitter[0] + 0.025 * scroll[1] as f32).min(1.).max(0.), (line_jitter[1] + 0.025 * scroll[1] as f32).min(1.).max(0.)];
+    }
+
     while let Ok((mouse_button, action)) = mouse.try_recv() {
       match (mouse_button, action) {
         (MouseButton::Button1, Action::Press) => {
@@ -109,9 +115,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
     color_program.update(|&(_, ref view, _, _)| {
       view.update(camera.transform);
     });
-    lines_program.update(|&(_, ref view, _, _, ref time)| {
+    lines_program.update(|&(_, ref view, _, _, ref jitter)| {
       view.update(camera.transform);
-      time.update(t);
+      jitter.update(line_jitter);
     });
 
     Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![

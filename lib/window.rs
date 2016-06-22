@@ -8,8 +8,9 @@ pub use glfw::{self, Action, Context, Key, MouseButton};
 pub type Keyboard = mpsc::Receiver<(Key, Action)>;
 pub type Mouse = mpsc::Receiver<(MouseButton, Action)>;
 pub type MouseMove = mpsc::Receiver<[f64; 2]>;
+pub type Scroll = mpsc::Receiver<[f64; 2]>;
 
-pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove) -> Result<Box<FnMut() -> bool>, String>>(w: u32, h: u32, title: &'static str, fullscreen: bool, init: Init) {
+pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove, Scroll) -> Result<Box<FnMut() -> bool>, String>>(w: u32, h: u32, title: &'static str, fullscreen: bool, init: Init) {
   let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
   // OpenGL hint
@@ -31,6 +32,7 @@ pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove) -> Result<Box<
   window.set_key_polling(true);
   window.set_cursor_pos_polling(true);
   window.set_mouse_button_polling(true);
+  window.set_scroll_polling(true);
 
   // init OpenGL
   gl::load_with(|s| window.get_proc_address(s) as *const c_void);
@@ -41,8 +43,9 @@ pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove) -> Result<Box<
   let (kbd_snd, kbd_rcv) = mpsc::channel();
   let (mouse_snd, mouse_rcv) = mpsc::channel();
   let (mouse_move_snd, mouse_move_rcv) = mpsc::channel();
+  let (scroll_snd, scroll_rcv) = mpsc::channel();
 
-  match init(w, h, kbd_rcv, mouse_rcv, mouse_move_rcv) {
+  match init(w, h, kbd_rcv, mouse_rcv, mouse_move_rcv, scroll_rcv) {
     Ok(mut run) => {
       while !window.should_close() {
         glfw.poll_events();
@@ -57,6 +60,9 @@ pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove) -> Result<Box<
               },
               glfw::WindowEvent::CursorPos(x, y) => {
                 let _ = mouse_move_snd.send([x, y]);
+              },
+              glfw::WindowEvent::Scroll(x, y) => {
+                let _ = scroll_snd.send([x, y]);
               },
               _ => {},
           }
