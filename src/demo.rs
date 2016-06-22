@@ -67,7 +67,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   Ok(Box::new(move || {
     // FIXME: debug; use to alter the line jitter
     while let Ok(scroll) = scroll.try_recv() {
-      line_jitter = [(line_jitter[0] + 0.025 * scroll[1] as f32).min(1.).max(0.), (line_jitter[1] + 0.025 * scroll[1] as f32).min(1.).max(0.)];
+      line_jitter = [(line_jitter[0] + 0.025 * scroll[1] as f32).max(0.), (line_jitter[1] + 0.025 * scroll[1] as f32).max(0.)];
     }
 
     while let Ok((mouse_button, action)) = mouse.try_recv() {
