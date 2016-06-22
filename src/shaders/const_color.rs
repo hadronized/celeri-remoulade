@@ -5,20 +5,25 @@ use ion::transform::Transform;
 pub const CONST_COLOR_VS: &'static str = "\
 layout (location = 0) in vec3 co;\n\
 \n
+out vec3 v_co;\n\
+\n
 uniform mat4 proj;\n\
 uniform mat4 view;\n\
 uniform mat4 inst;\n\
 \n\
 void main() {\n\
   gl_Position = proj * view * inst * vec4(co, 1.);\n\
+  v_co = co;\n\
 }";
 
 pub const CONST_COLOR_FS: &'static str = "\
+in vec3 v_co;\n\
+\n\
 out vec4 frag;\n
 uniform vec3 color;\n\
 \n\
 void main() {\n\
-  frag = vec4(color, 1.);\n\
+  frag = vec4((v_co * .25 + .75) * color, 1.);\n\
 }";
 
 pub type ConstColorUniforms<'a> = (Uniform<M44>, UniformUpdate<'a, Transform>, UniformUpdate<'a, Transform>, Uniform<[f32; 3]>);

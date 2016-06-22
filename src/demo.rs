@@ -15,6 +15,7 @@ use parts::lines::*;
 use shaders::chess::*;
 use shaders::chromatic_aberration::*;
 use shaders::const_color::*;
+use shaders::lines::*;
 
 const FOVY: f32 = f32::consts::FRAC_PI_4;
 const ZNEAR: f32 = 0.1;
@@ -34,6 +35,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
   let chess_program = new_chess_program().unwrap();
   let color_program = new_const_color_program().unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
+  let lines_program = new_lines_program().unwrap();
 
   let mut camera = Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default().repos(Position::new(0., -0.2, -4.)));
 
@@ -51,6 +53,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
     proj.update(camera.object);
   });
   color_program.update(|&(ref proj, _, _, _)| {
+    proj.update(camera.object);
+  });
+  lines_program.update(|&(ref proj, _, _, _, _)| {
     proj.update(camera.object);
   });
 
@@ -104,6 +109,10 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
     color_program.update(|&(_, ref view, _, _)| {
       view.update(camera.transform);
     });
+    lines_program.update(|&(_, ref view, _, _, ref time)| {
+      view.update(camera.transform);
+      time.update(t);
+    });
 
     Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
       &ShadingCommand::new(&chess_program, |_|{}, vec![
@@ -116,18 +125,18 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove) ->
                            1,
                            None)
       ]),
-      &ShadingCommand::new(&color_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect())
-      //&ShadingCommand::new(&color_program, |_|{}, vec![
-      //  RenderCommand::new(None,
-      //                     true,
-      //                     |&(_, _, ref inst, ref color): &(_, _, UniformUpdate<Transform>, Uniform<[f32; 3]>)| {
-      //                       inst.update(cube.transform);
-      //                       color.update([1., 0.5, 0.5]);
-      //                     },
-      //                     &cube.object,
-      //                     1,
-      //                     None),
-      //])
+      &ShadingCommand::new(&color_program, |_|{}, vec![
+        RenderCommand::new(None,
+                           true,
+                           |&(_, _, ref inst, ref color): &(_, _, UniformUpdate<Transform>, Uniform<[f32; 3]>)| {
+                             inst.update(cube.transform);
+                             color.update([1., 0.5, 0.5]);
+                           },
+                           &cube.object,
+                           1,
+                           None),
+      ]),
+      &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect())
     ]).run();
 
     // apply the chromatic shader and output directly into the back buffer
