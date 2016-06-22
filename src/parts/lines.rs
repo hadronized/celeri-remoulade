@@ -31,7 +31,7 @@ pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Line> {
   let seed = seed + 1.;
 
   let transform = Transform::default().translate(Position::new(0.1 * seed, 0., 0.));
-  let color = color_palette([0.6, 0.3, 0.6], [0.8, 0.1, 0.8], [0.5882, 0.1803, 0.3608], [0., 0.75, 0.], seed*0.005);
+  let color = color_palette([0.5, 0., 0.5], [0.5, 0.5, 0.5], [0.5882, 0.1803, 0.3608], [0.25, 0.8, 0.25], seed*0.005);
   let line = Line {
     tessellation: Tessellation::new(Mode::LineStrip, line, None),
     color: color,
