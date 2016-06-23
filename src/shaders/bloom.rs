@@ -4,7 +4,6 @@ use std::fmt::Write;
 // FIXME: already used in shaders::chromatic_aberration::CHROMATIC_ABERRATION_VS
 const BLOOM_VS: &'static str = "\
 out vec2 v_screen_co;\n\
-out vec2 v_co;\n\
 \n\
 const vec2[4] SCREEN_CO = vec2[](\n\
   vec2( 1., -1.),\n\
@@ -16,27 +15,6 @@ const vec2[4] SCREEN_CO = vec2[](\n\
 void main() {\n\
   gl_Position = vec4(SCREEN_CO[gl_VertexID], 0., 1.);\n\
   v_screen_co = SCREEN_CO[gl_VertexID];\n\
-  v_co = (SCREEN_CO[gl_VertexID] + 1.) * .5;\n\
-}";
-
-const BLOOM_FS: &'static str = "\
-in vec2 v_screen_co;\n\
-in vec2 v_co;\n\
-\n\
-out vec4 frag;\n\
-\n\
-uniform sampler2D tex;\n\
-uniform vec2 ires;\n\
-\n\
-void main() {\n\
-  // [.025, .075, .2, 0.4, .2, .075, .025] == 1\n\
-  vec3 color = 0.025 * texture(tex, ires * vec2(-3., 0.))\n\
-             + 0.075 * texture(tex, ires * vec2(-2., 0.))\n\
-             + 0.2   * texture(tex, ires * vec2(-1., 0.))\n\
-             + 0.4   * texture(tex, ires)\n\
-             + 0.2   * texture(tex, ires * vec2(1., 0.))\n\
-             + 0.075 * texture(tex, ires * vec2(2., 0.))\n\
-             + 0.025 * texture(tex, ires * vec2(3., 0.));\n\
 }";
 
 pub type BloomProgram = Program<BloomUniforms>;
@@ -56,9 +34,9 @@ fn gen_str_kernel(kernel: &[f32]) -> String {
   for (i, k) in kernel.iter().enumerate() {
     let j: i32 = i as i32 - l;
     if j == 0 {
-      let _ = write!(&mut s, "color += {} * texture(tex, ires);\n", k);
+      let _ = write!(&mut s, "color += {} * texture(tex, v_screen_co);\n", k);
     } else {
-      let _ = write!(&mut s, "color += {} * texture(tex, ires * vec2({}, {}));\n", k, j);
+      let _ = write!(&mut s, "color += {} * texture(tex, v_screen_co + ires * vec2({}, 0.));\n", k, j);
     }
   }
 
@@ -68,7 +46,6 @@ fn gen_str_kernel(kernel: &[f32]) -> String {
 fn new_bloom_fs(kernel: &[f32]) -> String {
   String::from("\
 in vec2 v_screen_co;\n\
-in vec2 v_co;\n\
 \n\
 out vec4 frag;\n\
 \n\
