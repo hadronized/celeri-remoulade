@@ -44,8 +44,6 @@ pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Line> {
 pub fn new_line(points_in: usize, points_out: usize, gap: f32, smooth: f32, seed: f32) -> Vec<[f32; 3]> {
   assert!(points_in <= points_out && points_in > 1);
 
-  deb!("creating line stuff: points_in={}, points_out={}, gap={}, smooth={}, seed={}", points_in, points_out, gap, smooth, seed);
-
   let seed = seed + 1.;
 
   // create control points
