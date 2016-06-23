@@ -12,6 +12,7 @@ use std::f32;
 use parts::lines::*;
 
 // shaders
+use shaders::bloom::*;
 use shaders::chess::*;
 use shaders::chromatic_aberration::*;
 use shaders::const_color::*;
@@ -30,10 +31,12 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut dev = Device::new();
 
   let back_buffer = Framebuffer::default();
+  let bloom_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
 
   let chess_program = new_chess_program().unwrap();
   let color_program = new_const_color_program().unwrap();
+  //let bloom_program = new_bloom_program().unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
   let lines_program = new_lines_program().unwrap();
   let mut line_jitter = [1., 1.];
