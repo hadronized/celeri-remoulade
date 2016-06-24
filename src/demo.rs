@@ -36,7 +36,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
   let chess_program = new_chess_program().unwrap();
   let color_program = new_const_color_program().unwrap();
-  //let bloom_program = new_bloom_program().unwrap();
+  let bloom_program = new_bloom_program(&[0.025, 0.075, 0.2, 0.4, 0.2, 0.075, 0.025], true).unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
   let lines_program = new_lines_program().unwrap();
   let mut line_jitter = [1., 1.];

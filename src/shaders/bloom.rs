@@ -34,9 +34,9 @@ fn gen_str_kernel(kernel: &[f32]) -> String {
   for (i, k) in kernel.iter().enumerate() {
     let j: i32 = i as i32 - l;
     if j == 0 {
-      let _ = write!(&mut s, "color += {} * texture(tex, v_screen_co);\n", k);
+      let _ = write!(&mut s, "color += {} * texture(tex, v_screen_co).rgb;\n", k);
     } else {
-      let _ = write!(&mut s, "color += {} * texture(tex, v_screen_co + ires * vec2({}, 0.));\n", k, j);
+      let _ = write!(&mut s, "color += {} * texture(tex, v_screen_co + ires * vec2({}, 0.)).rgb;\n", k, j);
     }
   }
 
