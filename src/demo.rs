@@ -31,14 +31,13 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut dev = Device::new();
 
   let back_buffer = Framebuffer::default();
-  let bloom_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
+  let hbloom_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
 
   let chess_program = new_chess_program().unwrap();
   let color_program = new_const_color_program().unwrap();
-  //let bloom_kernel = [0.025, 0.075, 0.2, 0.4, 0.2, 0.075, 0.025];
-  let bloom_kernel = [0.2, 0.4, 0.2];
-  let bloom_program = new_bloom_program(&bloom_kernel, true).unwrap();
+  let bloom_kernel = [0.05, 0.1, 0.2, 0.75, 1., 0.75, 0.2, 0.1, 0.05];
+  let hbloom_program = new_bloom_program(&bloom_kernel, true).unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
   let lines_program = new_lines_program().unwrap();
   let mut line_jitter = [1., 1.];
@@ -125,8 +124,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
       jitter.update(line_jitter);
     });
 
-    // render the lines into the bloom buffer
-    Pipeline::new(&bloom_buffer, [0., 0., 0., 1.], vec![
+    // render the lines into the hbloom buffer
+    Pipeline::new(&hbloom_buffer, [0., 0., 0., 1.], vec![
       &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect())
     ]).run();
 
@@ -153,10 +152,10 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            1,
                            None),
       ]),
-      // apply the bloom
-      &ShadingCommand::new(&bloom_program,
+      // apply the hbloom
+      &ShadingCommand::new(&hbloom_program,
                            |&(ref tex, ref ires)| {
-                             tex.update(&bloom_buffer.color_slot.texture);
+                             tex.update(&hbloom_buffer.color_slot.texture);
                              ires.update([1. / w as f32, 1. / h as f32]);
                            },
                            vec![
