@@ -1,4 +1,6 @@
 use ion::shader::{Program, ProgramError, new_program};
+use luminance::{Dim2, Flat, RGBA32F};
+use luminance_gl::gl33::{Texture, Uniform};
 use std::fmt::Write;
 
 // FIXME: already used in shaders::chromatic_aberration::CHROMATIC_ABERRATION_VS
@@ -17,12 +19,20 @@ void main() {\n\
   v_screen_co = SCREEN_CO[gl_VertexID];\n\
 }";
 
-pub type BloomProgram = Program<BloomUniforms>;
+pub type BloomProgram<'a> = Program<BloomUniforms<'a>>;
 
-pub type BloomUniforms = ();
+pub type BloomUniforms<'a> = (Uniform<&'a Texture<Flat, Dim2, RGBA32F>>, Uniform<[f32; 2]>);
 
-pub fn new_bloom_program(kernel: &[f32], horiz: bool) -> Result<BloomProgram, ProgramError> {
-  new_program(None, BLOOM_VS, None, &new_bloom_fs(kernel), |_| { Ok(()) })
+pub fn new_bloom_program<'a>(kernel: &[f32], horiz: bool) -> Result<BloomProgram<'a>, ProgramError> {
+  let src = new_bloom_fs(kernel);
+  deb!("{}", src);
+
+  new_program(None, BLOOM_VS, None, &src, |proxy| {
+    let tex = try!(proxy.uniform("tex"));
+    let ires = try!(proxy.uniform("ires"));
+
+    Ok((tex, ires))
+  })
 }
 
 fn gen_str_kernel(kernel: &[f32]) -> String {
@@ -53,6 +63,7 @@ uniform sampler2D tex;\n\
 uniform vec2 ires;\n\
 \n\
 void main() {\n\
-") + &gen_str_kernel(kernel) + "\
+") + &gen_str_kernel(kernel) + "\n\
+  frag = vec4(color, 1.);\n\
 }"
 }

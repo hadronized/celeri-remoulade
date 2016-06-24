@@ -3,7 +3,7 @@ use ion::entity::*;
 use ion::objects::{new_cube, new_plane};
 use ion::projection::perspective;
 use ion::window::{Action, Key, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
-use luminance::{Dim2, Flat, M44, RGBA32F, UniformUpdate};
+use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F, UniformUpdate};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot, Uniform};
 use nalgebra::Rotate;
 use std::f32;
@@ -36,7 +36,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
   let chess_program = new_chess_program().unwrap();
   let color_program = new_const_color_program().unwrap();
-  let bloom_program = new_bloom_program(&[0.025, 0.075, 0.2, 0.4, 0.2, 0.075, 0.025], true).unwrap();
+  //let bloom_kernel = [0.025, 0.075, 0.2, 0.4, 0.2, 0.075, 0.025];
+  let bloom_kernel = [0.2, 0.4, 0.2];
+  let bloom_program = new_bloom_program(&bloom_kernel, true).unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
   let lines_program = new_lines_program().unwrap();
   let mut line_jitter = [1., 1.];
@@ -123,7 +125,13 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
       jitter.update(line_jitter);
     });
 
-    Pipeline::new(&chromatic_aberration_buffer, [0., 0., 0., 1.], vec![
+    // render the lines into the bloom buffer
+    Pipeline::new(&bloom_buffer, [0., 0., 0., 1.], vec![
+      &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect())
+    ]).run();
+
+    Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
+      // render the cube and chess
       &ShadingCommand::new(&chess_program, |_|{}, vec![
         RenderCommand::new(None,
                            true,
@@ -145,25 +153,38 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            1,
                            None),
       ]),
-      &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect())
-    ]).run();
-
-    // apply the chromatic shader and output directly into the back buffer
-    Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
-      &ShadingCommand::new(&chromatic_aberration_program,
+      // apply the bloom
+      &ShadingCommand::new(&bloom_program,
                            |&(ref tex, ref ires)| {
-                             tex.update(&chromatic_aberration_buffer.color_slot.texture);
+                             tex.update(&bloom_buffer.color_slot.texture);
                              ires.update([1. / w as f32, 1. / h as f32]);
                            },
                            vec![
-                             RenderCommand::new(None,
-                                                true,
+                             RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
+                                                false,
                                                 |_|{},
                                                 &plane.object,
                                                 1,
                                                 None)
                            ])
     ]).run();
+
+    // apply the chromatic shader and output directly into the back buffer
+    //Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
+    //  &ShadingCommand::new(&chromatic_aberration_program,
+    //                       |&(ref tex, ref ires)| {
+    //                         tex.update(&chromatic_aberration_buffer.color_slot.texture);
+    //                         ires.update([1. / w as f32, 1. / h as f32]);
+    //                       },
+    //                       vec![
+    //                         RenderCommand::new(None,
+    //                                            true,
+    //                                            |_|{},
+    //                                            &plane.object,
+    //                                            1,
+    //                                            None)
+    //                       ])
+    //]).run();
 
     true
   }))
