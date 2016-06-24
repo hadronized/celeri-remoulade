@@ -32,12 +32,14 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
   let back_buffer = Framebuffer::default();
   let hbloom_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
+  let vbloom_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
 
   let chess_program = new_chess_program().unwrap();
   let color_program = new_const_color_program().unwrap();
   let bloom_kernel = [0.05, 0.1, 0.2, 0.75, 1., 0.75, 0.2, 0.1, 0.05];
   let hbloom_program = new_bloom_program(&bloom_kernel, true).unwrap();
+  let vbloom_program = new_bloom_program(&bloom_kernel, false).unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
   let lines_program = new_lines_program().unwrap();
   let mut line_jitter = [1., 1.];
@@ -124,9 +126,26 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
       jitter.update(line_jitter);
     });
 
-    // render the lines into the hbloom buffer
+    // render the lines into the horizontal bloom buffer
     Pipeline::new(&hbloom_buffer, [0., 0., 0., 1.], vec![
       &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect())
+    ]).run();
+
+    // apply the horizontal bloom and output into the vertical one
+    Pipeline::new(&vbloom_buffer, [0., 0., 0., 1.], vec![
+      &ShadingCommand::new(&hbloom_program,
+                           |&(ref tex, ref ires)| {
+                             tex.update(&hbloom_buffer.color_slot.texture);
+                             ires.update([1. / w as f32, 1. / h as f32]);
+                           },
+                           vec![
+                             RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
+                                                false,
+                                                |_|{},
+                                                &plane.object,
+                                                1,
+                                                None)
+                           ])
     ]).run();
 
     Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
@@ -153,9 +172,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            None),
       ]),
       // apply the hbloom
-      &ShadingCommand::new(&hbloom_program,
+      &ShadingCommand::new(&vbloom_program,
                            |&(ref tex, ref ires)| {
-                             tex.update(&hbloom_buffer.color_slot.texture);
+                             tex.update(&vbloom_buffer.color_slot.texture);
                              ires.update([1. / w as f32, 1. / h as f32]);
                            },
                            vec![
