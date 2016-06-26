@@ -16,6 +16,6 @@ pub fn color_palette(a: [f32; 3], b: [f32; 3], c: [f32; 3], d: [f32; 3], t: f32)
 }
 
 // A Gaussian.
-fn gaussian(a: f32, b: f32, c: f32, x: f32) -> f32 {
-  a * f32::exp(-f32::powf(x - b, 2.) / f32::powf(2. * c, 2.))
+fn gaussian(m: f32, v: f32, x: f32) -> f32 {
+  f32::exp(-f32::powf(x - m, 2.) / f32::powf(2. * v, 2.)) / (v * f32::sqrt(2. * PI))
 }
