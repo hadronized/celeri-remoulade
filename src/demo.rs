@@ -8,6 +8,8 @@ use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, S
 use nalgebra::Rotate;
 use std::f32;
 
+use procedural::gaussian;
+
 // parts
 use parts::lines::*;
 
@@ -37,7 +39,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
   let chess_program = new_chess_program().unwrap();
   let color_program = new_const_color_program().unwrap();
-  let bloom_kernel = [0.05, 0.075, 0.1, 0.25, 1., 0.25, 0.1, 0.075, 0.05];
+
+  let bloom_kernel: Vec<_> = (-20..21).map(|i| gaussian(0., 3., 0.5 * i as f32)).collect();
   let hbloom_program = new_bloom_program(&bloom_kernel, true).unwrap();
   let vbloom_program = new_bloom_program(&bloom_kernel, false).unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
@@ -171,6 +174,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            1,
                            None),
       ]),
+      &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect()),
       // apply the hbloom
       &ShadingCommand::new(&vbloom_program,
                            |&(ref tex, ref ires)| {
