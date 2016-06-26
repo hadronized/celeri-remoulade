@@ -143,7 +143,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            },
                            vec![
                              RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
-                                                false,
+                                                true,
                                                 |_|{},
                                                 &plane.object,
                                                 1,
@@ -152,28 +152,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     ]).run();
 
     Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
-      // render the cube and chess
-      &ShadingCommand::new(&chess_program, |_|{}, vec![
-        RenderCommand::new(None,
-                           true,
-                           |&(_, _, ref inst): &(_, _, UniformUpdate<Transform>)| {
-                             inst.update(plane.transform);
-                           },
-                           &plane.object,
-                           1,
-                           None)
-      ]),
-      &ShadingCommand::new(&color_program, |_|{}, vec![
-        RenderCommand::new(None,
-                           true,
-                           |&(_, _, ref inst, ref color): &(_, _, UniformUpdate<Transform>, Uniform<[f32; 3]>)| {
-                             inst.update(cube.transform);
-                             color.update([1., 0.5, 0.5]);
-                           },
-                           &cube.object,
-                           1,
-                           None),
-      ]),
+      // render the lines before the bloom
       &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect()),
       // apply the hbloom
       &ShadingCommand::new(&vbloom_program,
@@ -183,7 +162,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            },
                            vec![
                              RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
-                                                false,
+                                                true,
                                                 |_|{},
                                                 &plane.object,
                                                 1,
