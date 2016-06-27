@@ -3,7 +3,6 @@ use luminance::{Dim2, Flat, RGBA32F};
 use luminance_gl::gl33::{Texture, Uniform};
 use std::fmt::Write;
 
-// FIXME: already used in shaders::chromatic_aberration::CHROMATIC_ABERRATION_VS
 const BLOOM_VS: &'static str = "\
 out vec2 v_co;\n\
 \n\
