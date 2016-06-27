@@ -29,11 +29,17 @@ uniform sampler2D tex;\n\
 uniform vec2 ires;\n\
 \n\
 void main() {\n\
-  vec2 off = ires * pow(abs(length(v_screen_co)), 2.) * 5.;\n\
-  float r = texture(tex, v_co + vec2(off.x, 0.)).r;\n\
-  float g = texture(tex, v_co + off).g;\n\
-  float b = texture(tex, v_co + vec2(0., off.y)).b;\n\
-  frag = vec4(r, g, b, 1.);\n\
+  vec2 off = ires * pow(abs(length(v_screen_co)), 2.) * 3.;\n\
+  float r0 = texture(tex, v_co - vec2(off.x, off.y)).r;\n\
+  float r1 = texture(tex, v_co).r;\n\
+  float r2 = texture(tex, v_co + vec2(off.x, off.y)).r;\n\
+  float g0 = texture(tex, v_co - vec2(0., off.y)).g;\n\
+  float g1 = texture(tex, v_co + vec2(off.x, 0.)).g;\n\
+  float g2 = texture(tex, v_co + vec2(-off.x, off.y)).g;\n\
+  float b0 = texture(tex, v_co + vec2(off.x, -off.y)).b;\n\
+  float b1 = texture(tex, v_co - vec2(off.x, 0.)).b;\n\
+  float b2 = texture(tex, v_co + vec2(0., off.y)).b;\n\
+  frag = vec4((r0 + r1 + r2) / 3., (g0 + g1 + g2) / 3., (b0 + b1 + b2) / 3., 1.);\n\
 }";
 
 pub type ChromaticAberrationProgram<'a> = Program<(Uniform<&'a Texture<Flat, Dim2, RGBA32F>>, Uniform<[f32; 2]>)>;
