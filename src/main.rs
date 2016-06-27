@@ -16,14 +16,17 @@ const DEMO_TITLE: &'static str = "wip";
 
 fn main() {
   let args: Vec<_> = env::args().collect();
-  let (w, h, fullscreen) = if args.len() >= 3 && args.len() < 5 {
-    let w = args[1].parse().expect("width is expected");
-    let h = args[2].parse().expect("height is expected");
-    let fullscreen = args.len() == 4 && (args[3] == "-f" || args[3] == "--fullscreen");
-    (w, h, fullscreen)
-  } else {
-    (800, 600, false)
-  };
+  let conf = config_from_cli(&args[1..]);
 
-  with_window(w, h, DEMO_TITLE, fullscreen, demo::init);
+  with_window(conf, DEMO_TITLE, demo::init);
+}
+
+fn config_from_cli(args: &[String]) -> Option<(u32, u32)> {
+  if args.len() == 0 {
+    None
+  } else {
+    let w = args[0].parse().expect("width is expected");
+    let h = args[1].parse().expect("height is expected");
+    Some((w, h))
+  }
 }

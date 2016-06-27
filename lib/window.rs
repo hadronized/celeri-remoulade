@@ -10,7 +10,7 @@ pub type Mouse = mpsc::Receiver<(MouseButton, Action)>;
 pub type MouseMove = mpsc::Receiver<[f64; 2]>;
 pub type Scroll = mpsc::Receiver<[f64; 2]>;
 
-pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove, Scroll) -> Result<Box<FnMut() -> bool>, String>>(w: u32, h: u32, title: &'static str, fullscreen: bool, init: Init) {
+pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove, Scroll) -> Result<Box<FnMut() -> bool>, String>>(dim: Option<(u32, u32)>, title: &'static str, init: Init) {
   let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
   // OpenGL hint
@@ -18,14 +18,20 @@ pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove, Scroll) -> Res
   glfw.window_hint(glfw::WindowHint::ContextVersionMajor(3));
   glfw.window_hint(glfw::WindowHint::ContextVersionMinor(3));
 
-  let (mut window, events) = if fullscreen {
-    glfw.with_primary_monitor(|glfw, monitor| {
-      glfw.create_window(w, h, title, monitor.map_or(glfw::WindowMode::Windowed, |m| glfw::WindowMode::FullScreen(m)))
-        .expect("Failed to create GLFW window.")
-    })
+  let (mut window, events, w, h) = if let Some((w, h)) = dim {
+    let (mut window, events) = glfw.create_window(w, h, title, glfw::WindowMode::Windowed)
+      .expect("Failed to create GLFW window.");
+
+    (window, events, w, h)
   } else {
-    glfw.create_window(w, h, title, glfw::WindowMode::Windowed)
-      .expect("Failed to create GLFW window.")
+    glfw.with_primary_monitor(|glfw, monitor| {
+      let monitor = monitor.unwrap();
+      let vmode = monitor.get_video_mode().expect("primary monitor’s video mode");
+      let (w, h) = (vmode.width, vmode.height);
+      let (mut window, events) = glfw.create_window(w, h, title, glfw::WindowMode::FullScreen(monitor)).expect("Failed to create GLFW window.");
+
+      (window, events, w, h)
+    })
   };
 
   window.make_current();
