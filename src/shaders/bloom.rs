@@ -25,7 +25,6 @@ pub type BloomUniforms<'a> = (Uniform<&'a Texture<Flat, Dim2, RGBA32F>>, Uniform
 
 pub fn new_bloom_program<'a>(kernel: &[f32], horiz: bool) -> Result<BloomProgram<'a>, ProgramError> {
   let src = new_bloom_fs(kernel, horiz);
-  deb!("{}", src);
 
   new_program(None, BLOOM_VS, None, &src, |proxy| {
     let tex = try!(proxy.uniform("tex"));
