@@ -36,7 +36,7 @@ pub fn new_bloom_program<'a>(kernel: &[f32], horiz: bool) -> Result<BloomProgram
 fn gen_str_kernel(kernel: &[f32], horiz: bool) -> String {
   let mut s = String::new();
 
-  write!(&mut s, "vec3 color = vec3(0., 0., 0.);\n");
+  let _ = write!(&mut s, "vec3 color = vec3(0., 0., 0.);\n");
 
   let l = (kernel.len() as f32 / 2.) as i32;
   for (i, k) in kernel.iter().enumerate() {

@@ -3,8 +3,8 @@ use ion::entity::*;
 use ion::objects::{new_cube, new_plane};
 use ion::projection::perspective;
 use ion::window::{Action, Key, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
-use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F, UniformUpdate};
-use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot, Uniform};
+use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F};
+use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot};
 use nalgebra::Rotate;
 use std::f32;
 
@@ -15,9 +15,7 @@ use parts::lines::*;
 
 // shaders
 use shaders::bloom::*;
-use shaders::chess::*;
 use shaders::chromatic_aberration::*;
-use shaders::const_color::*;
 use shaders::lines::*;
 
 const FOVY: f32 = f32::consts::FRAC_PI_4;
@@ -37,9 +35,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let vbloom_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
 
-  let chess_program = new_chess_program().unwrap();
-  let color_program = new_const_color_program().unwrap();
-
   let bloom_kernel: Vec<_> = (-20..21).map(|i| gaussian(0., 3., 0.5 * i as f32)).collect();
   let hbloom_program = new_bloom_program(&bloom_kernel, true).unwrap();
   let vbloom_program = new_bloom_program(&bloom_kernel, false).unwrap();
@@ -50,7 +45,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut camera = Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default().repos(Position::new(0., -0.2, -4.)));
 
   let plane = Entity::new(new_plane(), Transform::default().reorient(X_AXIS, -f32::consts::FRAC_PI_2).rescale(Scale::uni(10.)));
-  let mut cube = Entity::new(new_cube(), Transform::default().translate(Translation::new(0., 2., 0.)));
   let mut lines = Vec::<Entity<Line>>::with_capacity(1000);
 
   for i in 0..lines.capacity() {
@@ -59,12 +53,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   }
 
   // set camera projection
-  chess_program.update(|&(ref proj, _, _)| {
-    proj.update(camera.object);
-  });
-  color_program.update(|&(ref proj, _, _, _)| {
-    proj.update(camera.object);
-  });
   lines_program.update(|&(ref proj, _, _, _, _)| {
     proj.update(camera.object);
   });
@@ -114,16 +102,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     dev.recompute_playback_cursor();
     let t = dev.playback_cursor();
 
-    cube.transform = cube.transform.reorient(Axis::new(1., 1., 1.), t);
-
-    // TODO: find a way to send to several programs at once
     // update the camera
-    chess_program.update(|&(_, ref view, _)| {
-      view.update(camera.transform);
-    });
-    color_program.update(|&(_, ref view, _, _)| {
-      view.update(camera.transform);
-    });
     lines_program.update(|&(_, ref view, _, _, ref jitter)| {
       view.update(camera.transform);
       jitter.update(line_jitter);
