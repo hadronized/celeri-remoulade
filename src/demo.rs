@@ -17,6 +17,7 @@ use parts::lines::*;
 use shaders::blur::*;
 use shaders::chromatic_aberration::*;
 use shaders::lines::*;
+use shaders::skybox::*;
 
 const FOVY: f32 = f32::consts::FRAC_PI_4;
 const ZNEAR: f32 = 0.1;
@@ -51,6 +52,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     let seed = i as f32;
     lines.push(new_line_entity(&new_line(100, 1000, 1., 0.2 + seed.sin().abs() * 0.1, seed), seed));
   }
+
+  let skybox = new_cube();
+  let skybox_program = new_skybox_program().unwrap();
 
   // set camera projection
   lines_program.update(|&(ref proj, _, _, _, _)| {
@@ -107,6 +111,11 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
       view.update(camera.transform);
       jitter.update(line_jitter);
     });
+    skybox_program.update(|&(ref proj, ref view, ref zfar)| {
+      proj.update(camera.object);
+      view.update(camera.transform);
+      zfar.update(ZFAR);
+    });
 
     // render the lines into the horizontal blur buffer
     Pipeline::new(&hblur_buffer, [0., 0., 0., 1.], vec![
@@ -131,6 +140,17 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     ]).run();
 
     Pipeline::new(&chromatic_aberration_buffer, [0., 0., 0., 1.], vec![
+      // skybox
+      &ShadingCommand::new(&skybox_program,
+                           |_|{}, 
+                           vec![
+                             RenderCommand::new(None,
+                                                true,
+                                                |_|{},
+                                                &skybox,
+                                                1,
+                                                None)
+                           ]),
       // render the lines before the blur
       &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect()),
       // apply the hblur
