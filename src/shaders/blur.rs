@@ -121,5 +121,18 @@ impl<'a> BlurTechnique<'a> {
     ]).run();
 
     // apply the blur and append the result to the output
+    let vert_shading_cmd = ShadingCommand::new(&self.vblur_program,
+                                               |&(ref tex, ref ires)| {
+                                                 tex.update(&self.vblur_buffer.color_slot.texture);
+                                                 ires.update([1. / self.w as f32, 1. / self.h as f32]);
+                                               },
+                                               vec![
+                                                 RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
+                                                                    true,
+                                                                    |_|{},
+                                                                    &self.plane,
+                                                                    1,
+                                                                    None)
+                                               ]);
   }
 }
