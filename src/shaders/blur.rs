@@ -6,7 +6,7 @@ use luminance_gl::gl33::{Framebuffer, RenderCommand, ShadingCommand, Tessellatio
                          Uniform};
 use std::fmt::Write;
 
-const BLOOM_VS: &'static str = "\
+const BLUR_VS: &'static str = "\
 out vec2 v_co;\n\
 \n\
 const vec2[4] SCREEN_CO = vec2[](\n\
@@ -21,14 +21,14 @@ void main() {\n\
   v_co = (SCREEN_CO[gl_VertexID] + 1.) * .5;\n\
 }";
 
-pub type BloomProgram<'a> = Program<BloomUniforms<'a>>;
+pub type BlurProgram<'a> = Program<BlurUniforms<'a>>;
 
-pub type BloomUniforms<'a> = (Uniform<&'a Texture<Flat, Dim2, RGBA32F>>, Uniform<[f32; 2]>);
+pub type BlurUniforms<'a> = (Uniform<&'a Texture<Flat, Dim2, RGBA32F>>, Uniform<[f32; 2]>);
 
-pub fn new_bloom_program<'a>(kernel: &[f32], horiz: bool) -> Result<BloomProgram<'a>, ProgramError> {
-  let src = new_bloom_fs(kernel, horiz);
+pub fn new_blur_program<'a>(kernel: &[f32], horiz: bool) -> Result<BlurProgram<'a>, ProgramError> {
+  let src = new_blur_fs(kernel, horiz);
 
-  new_program(None, BLOOM_VS, None, &src, |proxy| {
+  new_program(None, BLUR_VS, None, &src, |proxy| {
     let tex = try!(proxy.uniform("tex"));
     let ires = try!(proxy.uniform("ires"));
 
@@ -58,7 +58,7 @@ fn gen_str_kernel(kernel: &[f32], horiz: bool) -> String {
   s
 }
 
-fn new_bloom_fs(kernel: &[f32], horiz: bool) -> String {
+fn new_blur_fs(kernel: &[f32], horiz: bool) -> String {
   String::from("\
 in vec2 v_co;\n\
 \n\
@@ -76,10 +76,10 @@ void main() {\n\
 pub struct BlurTechnique<'a> {
   // horizontal blur
   hblur_buffer: Framebuffer<Flat, Dim2, Slot<Flat, Dim2, RGBA32F>, ()>,
-  hblur_program: BloomProgram<'a>,
+  hblur_program: BlurProgram<'a>,
   // vertical blur
   vblur_buffer: Framebuffer<Flat, Dim2, Slot<Flat, Dim2, RGBA32F>, ()>,
-  vblur_program: BloomProgram<'a>,
+  vblur_program: BlurProgram<'a>,
   // plane used to perform fullscreen passes
   plane: Tessellation,
   w: u32,
@@ -90,9 +90,9 @@ impl<'a> BlurTechnique<'a> {
   pub fn new(w: u32, h: u32, kernel: &[f32]) -> Self {
     BlurTechnique {
       hblur_buffer: Framebuffer::new((w, h), 0).unwrap(),
-      hblur_program: new_bloom_program(kernel, true).unwrap(),
+      hblur_program: new_blur_program(kernel, true).unwrap(),
       vblur_buffer: Framebuffer::new((w, h), 0).unwrap(),
-      vblur_program: new_bloom_program(kernel, false).unwrap(),
+      vblur_program: new_blur_program(kernel, false).unwrap(),
       plane: new_plane(),
       w: w,
       h: h

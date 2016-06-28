@@ -14,7 +14,7 @@ use procedural::gaussian;
 use parts::lines::*;
 
 // shaders
-use shaders::bloom::*;
+use shaders::blur::*;
 use shaders::chromatic_aberration::*;
 use shaders::lines::*;
 
@@ -31,13 +31,13 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut dev = Device::new();
 
   let back_buffer = Framebuffer::default();
-  let hbloom_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
-  let vbloom_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
+  let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
+  let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
 
   let bloom_kernel: Vec<_> = (-20..21).map(|i| gaussian(0., 3., 0.5 * i as f32)).collect();
-  let hbloom_program = new_bloom_program(&bloom_kernel, true).unwrap();
-  let vbloom_program = new_bloom_program(&bloom_kernel, false).unwrap();
+  let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();
+  let vblur_program = new_blur_program(&bloom_kernel, false).unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
   let lines_program = new_lines_program().unwrap();
   let mut line_jitter = [1., 1.];
@@ -108,16 +108,16 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
       jitter.update(line_jitter);
     });
 
-    // render the lines into the horizontal bloom buffer
-    Pipeline::new(&hbloom_buffer, [0., 0., 0., 1.], vec![
+    // render the lines into the horizontal blur buffer
+    Pipeline::new(&hblur_buffer, [0., 0., 0., 1.], vec![
       &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect())
     ]).run();
 
-    // apply the horizontal bloom and output into the vertical one
-    Pipeline::new(&vbloom_buffer, [0., 0., 0., 1.], vec![
-      &ShadingCommand::new(&hbloom_program,
+    // apply the horizontal blur and output into the vertical one
+    Pipeline::new(&vblur_buffer, [0., 0., 0., 1.], vec![
+      &ShadingCommand::new(&hblur_program,
                            |&(ref tex, ref ires)| {
-                             tex.update(&hbloom_buffer.color_slot.texture);
+                             tex.update(&hblur_buffer.color_slot.texture);
                              ires.update([1. / w as f32, 1. / h as f32]);
                            },
                            vec![
@@ -131,12 +131,12 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     ]).run();
 
     Pipeline::new(&chromatic_aberration_buffer, [0., 0., 0., 1.], vec![
-      // render the lines before the bloom
+      // render the lines before the blur
       &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect()),
-      // apply the hbloom
-      &ShadingCommand::new(&vbloom_program,
+      // apply the hblur
+      &ShadingCommand::new(&vblur_program,
                            |&(ref tex, ref ires)| {
-                             tex.update(&vbloom_buffer.color_slot.texture);
+                             tex.update(&vblur_buffer.color_slot.texture);
                              ires.update([1. / w as f32, 1. / h as f32]);
                            },
                            vec![
