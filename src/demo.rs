@@ -32,8 +32,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut dev = Device::new();
 
   let back_buffer = Framebuffer::default();
-  let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
-  let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
+  let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w / 2, h / 2), 0).unwrap();
+  let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w / 2, h / 2), 0).unwrap();
   let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
 
   let bloom_kernel: Vec<_> = (-21..22).map(|i| gaussian(0., 5., 0.9 * i as f32)).collect();
@@ -125,9 +125,10 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     // apply the horizontal blur and output into the vertical one
     Pipeline::new(&vblur_buffer, [0., 0., 0., 1.], vec![
       &ShadingCommand::new(&hblur_program,
-                           |&(ref tex, ref ires)| {
+                           |&(ref tex, ref ires, ref off)| {
                              tex.update(&hblur_buffer.color_slot.texture);
-                             ires.update([1. / w as f32, 1. / h as f32]);
+                             ires.update([2. / w as f32, 2. / h as f32]);
+                             off.update([1., 1.]);
                            },
                            vec![
                              RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
@@ -155,9 +156,10 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
       //&ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect()),
       // apply the hblur
       &ShadingCommand::new(&vblur_program,
-                           |&(ref tex, ref ires)| {
+                           |&(ref tex, ref ires, ref off)| {
                              tex.update(&vblur_buffer.color_slot.texture);
-                             ires.update([1. / w as f32, 1. / h as f32]);
+                             ires.update([2. / w as f32, 2. / h as f32]);
+                             off.update([0.5, 0.5]);
                            },
                            vec![
                              RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
