@@ -74,9 +74,9 @@ fn gen_str_kernel(kernel: &[f32], horiz: bool) -> String {
   let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, 1. - s);
 
   for i in 0..(kernel.len() / 4) {
-    let o = 3 + 2 * i as i32;
-    let a = kernel[kernel.len() / 2 + 3 + 2 * i];
-    let b = kernel[kernel.len() / 2 + 2 + 2 * i];
+    let o = 2 + 2 * i as i32;
+    let a = kernel[kernel.len() / 2 + 2 + 2 * i];
+    let b = kernel[kernel.len() / 2 + 3 + 2 * i];
     let ab = a + b;
     let s = b / ab;
 
