@@ -139,7 +139,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            ])
     ]).run();
 
-    Pipeline::new(&chromatic_aberration_buffer, [0., 0., 0., 1.], vec![
+    Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
       // skybox
       // &ShadingCommand::new(&skybox_program,
       //                      |_|{}, 
@@ -170,21 +170,21 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     ]).run();
 
     // apply the chromatic shader and output directly into the back buffer
-    Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
-      &ShadingCommand::new(&chromatic_aberration_program,
-                           |&(ref tex, ref ires)| {
-                             tex.update(&chromatic_aberration_buffer.color_slot.texture);
-                             ires.update([1. / w as f32, 1. / h as f32]);
-                           },
-                           vec![
-                             RenderCommand::new(None,
-                                                true,
-                                                |_|{},
-                                                &plane.object,
-                                                1,
-                                                None)
-                           ])
-    ]).run();
+    //Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
+    //  &ShadingCommand::new(&chromatic_aberration_program,
+    //                       |&(ref tex, ref ires)| {
+    //                         tex.update(&chromatic_aberration_buffer.color_slot.texture);
+    //                         ires.update([1. / w as f32, 1. / h as f32]);
+    //                       },
+    //                       vec![
+    //                         RenderCommand::new(None,
+    //                                            true,
+    //                                            |_|{},
+    //                                            &plane.object,
+    //                                            1,
+    //                                            None)
+    //                       ])
+    //]).run();
 
     true
   }))

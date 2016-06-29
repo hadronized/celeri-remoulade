@@ -28,6 +28,8 @@ pub type BlurUniforms<'a> = (Uniform<&'a Texture<Flat, Dim2, RGBA32F>>, Uniform<
 pub fn new_blur_program<'a>(kernel: &[f32], horiz: bool) -> Result<BlurProgram<'a>, ProgramError> {
   let src = new_blur_fs(kernel, horiz);
 
+  deb!("{}", src);
+
   new_program(None, BLUR_VS, None, &src, |proxy| {
     let tex = try!(proxy.uniform("tex"));
     let ires = try!(proxy.uniform("ires"));
@@ -55,32 +57,48 @@ fn gen_str_kernel(kernel: &[f32], horiz: bool) -> String {
     let a = kernel[2 * i];
     let b = kernel[2 * i + 1];
     let ab = a + b;
-    let s = b / ab;
+    let s = a / ab;
 
-    let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, o as f32 + s);
+    if horiz {
+      let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, o as f32 + s);
+    } else {
+      let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2(0., {})).rgb;\n", ab, o as f32 + s);
+    }
   }
 
   let a = kernel[kernel.len() / 2 - 1];
   let b = kernel[kernel.len() / 2] * 0.5;
   let ab = a + b;
-  let s = b / ab;
+  let s = a / ab;
 
-  let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, s - 1.);
+  if horiz {
+    let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, -1. + s);
+  } else {
+    let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2(0., {})).rgb;\n", ab, -1. + s);
+  }
 
   let a = kernel[kernel.len() / 2 + 1];
   let ab = a + b;
-  let s = b / ab;
+  let s = a / ab;
 
-  let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, 1. - s);
+  if horiz {
+    let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, s);
+  } else {
+    let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2(0., {})).rgb;\n", ab, s);
+  }
 
   for i in 0..(kernel.len() / 4) {
     let o = 2 + 2 * i as i32;
-    let a = kernel[kernel.len() / 2 + 2 + 2 * i];
-    let b = kernel[kernel.len() / 2 + 3 + 2 * i];
+    let a = kernel[kernel.len() / 2 + 3 + 2 * i];
+    let b = kernel[kernel.len() / 2 + 2 + 2 * i];
     let ab = a + b;
-    let s = b / ab;
+    let s = a / ab;
 
-    let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, o as f32 - s);
+    if horiz {
+      let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, o as f32 + s);
+    } else {
+      let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2(0., {})).rgb;\n", ab, o as f32 + s);
+    }
   }
 
   out
