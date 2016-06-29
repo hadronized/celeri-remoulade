@@ -131,7 +131,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            },
                            vec![
                              RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
-                                                true,
+                                                false,
                                                 |_|{},
                                                 &plane.object,
                                                 1,
@@ -161,7 +161,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            },
                            vec![
                              RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
-                                                true,
+                                                false,
                                                 |_|{},
                                                 &plane.object,
                                                 1,
