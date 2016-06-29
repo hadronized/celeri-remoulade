@@ -36,7 +36,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
 
-  let bloom_kernel: Vec<_> = (-20..21).map(|i| gaussian(0., 5., 0.9 * i as f32)).collect();
+  //let bloom_kernel: Vec<_> = (-20..21).map(|i| gaussian(0., 5., 0.9 * i as f32)).collect();
+  let bloom_kernel: Vec<_> = (-5..6).map(|i| gaussian(0., 5., 0.9 * i as f32)).collect();
   let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();
   let vblur_program = new_blur_program(&bloom_kernel, false).unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();

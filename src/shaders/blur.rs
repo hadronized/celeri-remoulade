@@ -37,9 +37,63 @@ pub fn new_blur_program<'a>(kernel: &[f32], horiz: bool) -> Result<BlurProgram<'
 }
 
 fn gen_str_kernel(kernel: &[f32], horiz: bool) -> String {
+  let mut offsets = Vec::new();
+  offsets.resize((kernel.len() as f32 / 2.).ceil() as usize, 0.);
+
   let mut s = String::new();
 
   let _ = write!(&mut s, "vec3 color = vec3(0., 0., 0.);\n");
+
+  deb!("kernel: {:?}", kernel);
+  info!("reducing blur kernel of size {} to {}", kernel.len(), offsets.len());
+
+  let l = (kernel.len() as f32 / 2.) as i32;
+
+  // If len() % 4 == 1, that means we can linearily interpolate and fetch all pixels left to and
+  // right to the current pixel and fetch the current pixel alone.
+  //
+  // Otherwise, we have to fetch the current pixel twice and divide by the corresponding amount of
+  // weight.
+  //
+  // In all cases, that optimisation enables to have a kernel which size is ceil(size / 2). For a
+  // 41x41, the resulting kernel is a 21x21 one, speeding everything the fuck up!
+  if kernel.len() % 4 == 1 {
+    for i in 0..(kernel.len() / 2) {
+      deb!("i: -{}", i);
+    }
+
+    deb!("i:  {}", kernel.len() / 2);
+
+    for i in (kernel.len() / 2 + 1)..kernel.len() {
+      deb!("i: +{}", i);
+    }
+  } else {
+    for i in 0..(kernel.len() / 4) {
+      let o = 2 * i as i32 - l;
+      let a = kernel[2 * i];
+      let b = kernel[2 * i + 1];
+      let s = b / (a + b);
+      deb!("{}: {}", o, o as f32 + s);
+    }
+
+    let a = kernel[kernel.len() / 2 - 1];
+    let b = kernel[kernel.len() / 2] * 0.5;
+    let s = b / (a + b);
+
+    deb!("-1: {}", s - 1.);
+
+    let a = kernel[kernel.len() / 2 + 1];
+    let s = b / (a + b);
+    deb!("1: {}", 1. - s);
+
+    for i in 0..(kernel.len() / 4) {
+      let o = 3 + 2 * i as i32;
+      let a = kernel[kernel.len() / 2 + 3 + 2 * i];
+      let b = kernel[kernel.len() / 2 + 2 + 2 * i];
+      let s = b / (a + b);
+      deb!("{}: {}", o, o as f32 - s);
+    }
+  }
 
   let l = (kernel.len() as f32 / 2.) as i32;
   for (i, k) in kernel.iter().enumerate() {
