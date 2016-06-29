@@ -7,6 +7,9 @@ use procedural::{color_palette, noise2};
 
 use shaders::lines::LinesUniforms;
 
+const X_OFFSET: f32 = 50.;
+const Y_OFFSET: f32 = 50.;
+
 pub struct Line {
   pub tessellation: Tessellation,
   pub color: [f32; 3],
@@ -30,7 +33,7 @@ impl Line {
 pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Line> {
   let seed = seed + 1.;
 
-  let transform = Transform::default().translate(Position::new(0.1 * seed, 0., 0.));
+  let transform = Transform::default().translate(Position::new(0.1 * seed - X_OFFSET, 0., -Y_OFFSET));
   let color = color_palette([0.5, 0., 0.5], [0.5, 0.5, 0.5], [0.5882, 0.1803, 0.3608], [0.25, 0.8, 0.25], seed*0.005);
   let line = Line {
     tessellation: Tessellation::new(Mode::LineStrip, line, None),
