@@ -125,10 +125,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     // apply the horizontal blur and output into the vertical one
     Pipeline::new(&vblur_buffer, [0., 0., 0., 1.], vec![
       &ShadingCommand::new(&hblur_program,
-                           |&(ref tex, ref ires, ref off)| {
+                           |&(ref tex, ref ires)| {
                              tex.update(&hblur_buffer.color_slot.texture);
                              ires.update([2. / w as f32, 2. / h as f32]);
-                             off.update([1., 1.]);
                            },
                            vec![
                              RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
@@ -156,10 +155,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
       //&ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect()),
       // apply the hblur
       &ShadingCommand::new(&vblur_program,
-                           |&(ref tex, ref ires, ref off)| {
+                           |&(ref tex, ref ires)| {
                              tex.update(&vblur_buffer.color_slot.texture);
                              ires.update([2. / w as f32, 2. / h as f32]);
-                             off.update([0.5, 0.5]);
                            },
                            vec![
                              RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),

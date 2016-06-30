@@ -23,7 +23,7 @@ void main() {\n\
 
 pub type BlurProgram<'a> = Program<BlurUniforms<'a>>;
 
-pub type BlurUniforms<'a> = (Uniform<&'a Texture<Flat, Dim2, RGBA32F>>, Uniform<[f32; 2]>, Uniform<[f32; 2]>);
+pub type BlurUniforms<'a> = (Uniform<&'a Texture<Flat, Dim2, RGBA32F>>, Uniform<[f32; 2]>);
 
 pub fn new_blur_program<'a>(kernel: &[f32], horiz: bool) -> Result<BlurProgram<'a>, ProgramError> {
   let src = new_blur_fs(kernel, horiz);
@@ -33,9 +33,8 @@ pub fn new_blur_program<'a>(kernel: &[f32], horiz: bool) -> Result<BlurProgram<'
   new_program(None, BLUR_VS, None, &src, |proxy| {
     let tex = try!(proxy.uniform("tex"));
     let ires = try!(proxy.uniform("ires"));
-    let off = try!(proxy.uniform("off"));
 
-    Ok((tex, ires, off))
+    Ok((tex, ires))
   })
 }
 
@@ -61,9 +60,9 @@ fn gen_str_kernel(kernel: &[f32], horiz: bool) -> String {
     let s = a / ab;
 
     if horiz {
-      let _ = write!(&mut out, "color += {} * texture(tex, (v_co + ires * vec2({}, 0.))).rgb;\n", ab, o as f32 + s);
+      let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, o as f32 + s);
     } else {
-      let _ = write!(&mut out, "color += {} * texture(tex, (v_co + ires * vec2(0., {}))).rgb;\n", ab, o as f32 + s);
+      let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2(0., {})).rgb;\n", ab, o as f32 + s);
     }
   }
 
@@ -73,9 +72,9 @@ fn gen_str_kernel(kernel: &[f32], horiz: bool) -> String {
   let s = a / ab;
 
   if horiz {
-    let _ = write!(&mut out, "color += {} * texture(tex, (v_co + ires * vec2({}, 0.) - .5) * off + off * .5).rgb;\n", ab, -1. + s);
+    let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, -1. + s);
   } else {
-    let _ = write!(&mut out, "color += {} * texture(tex, (v_co + ires * vec2(0., {}) - .5) * off + off * .5).rgb;\n", ab, -1. + s);
+    let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2(0., {})).rgb;\n", ab, -1. + s);
   }
 
   let a = kernel[kernel.len() / 2 + 1];
@@ -83,9 +82,9 @@ fn gen_str_kernel(kernel: &[f32], horiz: bool) -> String {
   let s = a / ab;
 
   if horiz {
-    let _ = write!(&mut out, "color += {} * texture(tex, (v_co + ires * vec2({}, 0.) - .5) * off + off * .5).rgb;\n", ab, s);
+    let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, s);
   } else {
-    let _ = write!(&mut out, "color += {} * texture(tex, (v_co + ires * vec2(0., {}) - .5) * off + off * .5).rgb;\n", ab, s);
+    let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2(0., {})).rgb;\n", ab, s);
   }
 
   for i in 0..(kernel.len() / 4) {
@@ -96,9 +95,9 @@ fn gen_str_kernel(kernel: &[f32], horiz: bool) -> String {
     let s = a / ab;
 
     if horiz {
-      let _ = write!(&mut out, "color += {} * texture(tex, (v_co + ires * vec2({}, 0.) - .5) * off + off * .5).rgb;\n", ab, o as f32 + s);
+      let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2({}, 0.)).rgb;\n", ab, o as f32 + s);
     } else {
-      let _ = write!(&mut out, "color += {} * texture(tex, (v_co + ires * vec2(0., {}) - .5) * off + off * .5).rgb;\n", ab, o as f32 + s);
+      let _ = write!(&mut out, "color += {} * texture(tex, v_co + ires * vec2(0., {})).rgb;\n", ab, o as f32 + s);
     }
   }
 
@@ -113,7 +112,6 @@ out vec4 frag;\n\
 \n\
 uniform sampler2D tex;\n\
 uniform vec2 ires;\n\
-uniform vec2 off;\n\
 \n\
 void main() {\n\
 ") + &gen_str_kernel(kernel, horiz) + "\n\
