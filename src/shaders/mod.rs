@@ -1,3 +1,4 @@
+pub mod ashes;
 pub mod blur;
 //pub mod chess;
 pub mod chromatic_aberration;
