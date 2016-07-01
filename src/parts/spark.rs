@@ -3,6 +3,10 @@ use luminance_gl::gl33::Tessellation;
 use procedural::noise2;
 
 struct Spark {
+  size: f32, // physical size
+  heat: f32, // a.k.a. power, weight; determines how shiny the spark is
+  color: [f32; 3],
+  life: f32, // life time, in milliseconds
 }
 
 pub fn new_sparks(nb: usize) -> Tessellation {
