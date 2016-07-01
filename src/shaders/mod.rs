@@ -1,4 +1,3 @@
-pub mod ashes;
 pub mod blur;
 //pub mod chess;
 pub mod chromatic_aberration;
@@ -6,3 +5,4 @@ pub mod chromatic_aberration;
 //pub mod copy;
 pub mod lines;
 pub mod skybox;
+pub mod spark;
