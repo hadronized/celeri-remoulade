@@ -15,8 +15,8 @@ default = []
 hotload = []
 
 [dependencies]
-luminance = { path = "../../luminance-rs" }
-luminance-gl = { path = "../../luminance-gl-rs" }
+luminance = "0.6.0"
+luminance-gl = "0.5.0"
 gl = "0.5.2"
 glfw = "0.3.0"
 nalgebra = "0.6.0"
