@@ -19,7 +19,7 @@ pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove, Scroll) -> Res
   glfw.window_hint(glfw::WindowHint::ContextVersionMinor(3));
 
   let (mut window, events, w, h) = if let Some((w, h)) = dim {
-    let (mut window, events) = glfw.create_window(w, h, title, glfw::WindowMode::Windowed)
+    let (window, events) = glfw.create_window(w, h, title, glfw::WindowMode::Windowed)
       .expect("Failed to create GLFW window.");
 
     (window, events, w, h)
@@ -28,7 +28,7 @@ pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove, Scroll) -> Res
       let monitor = monitor.unwrap();
       let vmode = monitor.get_video_mode().expect("primary monitor’s video mode");
       let (w, h) = (vmode.width, vmode.height);
-      let (mut window, events) = glfw.create_window(w, h, title, glfw::WindowMode::FullScreen(monitor)).expect("Failed to create GLFW window.");
+      let (window, events) = glfw.create_window(w, h, title, glfw::WindowMode::FullScreen(monitor)).expect("Failed to create GLFW window.");
 
       (window, events, w, h)
     })

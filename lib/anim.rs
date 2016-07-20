@@ -3,7 +3,7 @@ use std::ops::{Add, Mul};
 
 pub type Time = f32;
 
-#[derive(Copy, Clone, Debug, RustcDecodable, RustcEncodable)]
+#[derive(Copy, Clone, Debug)]
 pub struct ControlPoint<T> {
   /// Time at which the `ControlPoint` should be reached.
   pub t: Time,
@@ -23,7 +23,7 @@ impl<T> ControlPoint<T> {
   }
 }
 
-#[derive(Copy, Clone, Debug, RustcDecodable, RustcEncodable)]
+#[derive(Copy, Clone, Debug)]
 pub enum Interpolation<T> {
   /// Hold the `ControlPoint` until the next one is met.
   Hold,
@@ -35,7 +35,7 @@ pub enum Interpolation<T> {
   Bezier((Time, T), (Time, T))
 }
 
-#[derive(Debug, RustcDecodable, RustcEncodable)]
+#[derive(Debug)]
 pub struct AnimParam<T> {
   control_points: Vec<ControlPoint<T>>
 }

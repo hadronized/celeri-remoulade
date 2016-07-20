@@ -3,7 +3,6 @@ pub extern crate glfw;
 extern crate luminance;
 extern crate luminance_gl;
 extern crate nalgebra;
-extern crate rustc_serialize;
 extern crate time;
 
 pub mod anim;
@@ -19,4 +18,3 @@ pub mod resource;
 pub mod shader;
 pub mod transform;
 pub mod window;
-
