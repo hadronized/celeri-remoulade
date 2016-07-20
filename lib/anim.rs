@@ -8,13 +8,13 @@ pub struct ControlPoint<T> {
   /// Time at which the `ControlPoint` should be reached.
   pub t: Time,
   /// Interpolation to use.
-  pub interpolation: Interpolation<T>,
+  pub interpolation: Interpolation,
   /// Actual value.
   pub value: T
 }
 
 impl<T> ControlPoint<T> {
-  pub fn new(t: Time, interpolation: Interpolation<T>, value: T) -> Self {
+  pub fn new(t: Time, interpolation: Interpolation, value: T) -> Self {
     ControlPoint {
       t: t,
       interpolation: interpolation,
@@ -24,15 +24,13 @@ impl<T> ControlPoint<T> {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum Interpolation<T> {
+pub enum Interpolation {
   /// Hold the `ControlPoint` until the next one is met.
   Hold,
   /// Linear interpolation between the `ControlPoint` and the next one.
   Linear,
   /// Cosine interpolation between the `ControlPoint` and the next one.
-  Cosine,
-  /// Cubic bezier interpolation between the `ControlPoint` and the next one.
-  Bezier((Time, T), (Time, T))
+  Cosine
 }
 
 #[derive(Debug)]
@@ -133,28 +131,6 @@ impl Sampler {
         let cos_nt = (1. + f32::cos(nt * consts::PI)) * 0.5;
 
         cp.value * cos_nt + cp1.value * (1. - cos_nt)
-      },
-      Interpolation::Bezier(_, (_, rv)) => {
-        let cp1 = &param.control_points[i+1];
-        let nt = normalize_time(t, cp, cp1);
-        let p0 = cp.value;
-        let p1 = rv;
-        let p3 = cp1.value;
-
-        // if the next control point has Bezier information, retrieve its left tangent ; otherwise
-        // use p3
-        let p2 = match cp1.interpolation {
-          Interpolation::Bezier((_, lv), _) => lv,
-          _ => p3
-        };
-
-        let one_nt = 1. - nt;
-        let one_nt2 = one_nt * one_nt;
-        let one_nt3 = one_nt2 * one_nt;
-        let nt2 = nt * nt;
-        let nt3 = nt2 * nt;
-
-        p0 * one_nt3 + p1 * 3. * one_nt2 * nt + p2 * 3. * one_nt * nt2 + p3 * nt3
       }
     })
   }
