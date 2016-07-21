@@ -4,5 +4,6 @@ pub mod chromatic_aberration;
 //pub mod const_color;
 //pub mod copy;
 pub mod lines;
+pub mod lines_pp;
 pub mod skybox;
 pub mod spark;

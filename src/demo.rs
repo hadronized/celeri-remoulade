@@ -18,6 +18,7 @@ use parts::lines::*;
 use shaders::blur::*;
 use shaders::chromatic_aberration::*;
 use shaders::lines::*;
+use shaders::lines_pp::*;
 use shaders::skybox::*;
 
 const FOVY: f32 = f32::consts::FRAC_PI_4;
@@ -39,6 +40,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();
   let vblur_program = new_blur_program(&bloom_kernel, false).unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
+  let lines_pp = new_lines_pp().unwrap();
   let lines_program = new_lines_program().unwrap();
   let mut line_jitter = [1., 1.];
 
@@ -151,7 +153,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                                                 None)
                            ])
     ]).run();
-
 
     Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
       // skybox
