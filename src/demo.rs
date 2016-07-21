@@ -35,6 +35,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w / 2, h / 2), 0).unwrap();
   let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w / 2, h / 2), 0).unwrap();
   let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
+  let pp_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
 
   let bloom_kernel: Vec<_> = (-21..22).map(|i| gaussian(0., 6., 0.6 * i as f32)).collect();
   let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();
@@ -42,6 +43,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
   let lines_pp = new_lines_pp().unwrap();
   let lines_program = new_lines_program().unwrap();
+
   let mut line_jitter = [1., 1.];
 
   let mut camera = Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default());
@@ -154,7 +156,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            ])
     ]).run();
 
-    Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
+    Pipeline::new(&pp_buffer, [0., 0., 0., 1.], vec![
       // skybox
       &ShadingCommand::new(&skybox_program,
                            |_|{}, 
@@ -184,22 +186,22 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            ])
     ]).run();
 
-    // apply the chromatic shader and output directly into the back buffer
-    //Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
-    //  &ShadingCommand::new(&chromatic_aberration_program,
-    //                       |&(ref tex, ref ires)| {
-    //                         tex.update(&chromatic_aberration_buffer.color_slot.texture);
-    //                         ires.update([1. / w as f32, 1. / h as f32]);
-    //                       },
-    //                       vec![
-    //                         RenderCommand::new(None,
-    //                                            true,
-    //                                            |_|{},
-    //                                            &plane.object,
-    //                                            1,
-    //                                            None)
-    //                       ])
-    //]).run();
+    // apply the post-process shader and output directly into the back buffer
+    Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
+      &ShadingCommand::new(&lines_pp,
+                           |&(ref tex, ref ires)| {
+                             tex.update(&pp_buffer.color_slot.texture);
+                             ires.update([1. / w as f32, 1. / h as f32]);
+                           },
+                           vec![
+                             RenderCommand::new(None,
+                                                true,
+                                                |_|{},
+                                                &plane.object,
+                                                1,
+                                                None)
+                           ])
+    ]).run();
 
     true
   }))
