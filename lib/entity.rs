@@ -24,11 +24,3 @@ impl<T> Deref for Entity<T> {
     &self.transform
   }
 }
-
-/// Trait of types that can see `Entity` updates.
-pub trait EntityView {
-  /// Called whenever the `Entity` gets its *object* changed.
-  fn object_changed<T>(&mut self, entity: &Entity<T>);
-  /// Called whenever the `Entity` gets its *transform* changed.
-  fn transform_changed<T>(&mut self, entity: &Entity<T>);
-}
