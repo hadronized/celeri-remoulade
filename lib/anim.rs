@@ -209,6 +209,26 @@ fn around_search_lower_cp<T>(cps: &Vec<Key<T>>, mut i: usize, t: Time) -> Option
   Some(i)
 }
 
+/// Continuous animation.
+///
+/// This type wraps a `A` as a function of time `T`. It has a simple semantic: `at`, giving the
+/// value at the wished time.
+pub struct Cont<'a, T, A> {
+  closure: Box<Fn(T) -> A + 'a>
+}
+
+impl<'a, T, A> Cont<'a, T, A> {
+  pub fn new<F>(f: F) -> Self where F: 'a + Fn(T) -> A {
+    Cont {
+      closure: Box::new(f)
+    }
+  }
+
+  pub fn at(&self, t: T) -> A {
+    (self.closure)(t)
+  }
+}
+
 #[test]
 fn test_binary_search_lower_cp0() {
   let cps = Vec::<Key<f32>>::new();
