@@ -112,7 +112,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
     deb!("time {}", t);
 
-    camera = anim_cam.at(t);
+    // TODO: comment that line to enable debug camera
+    //camera = anim_cam.at(t);
 
     // update the camera
     lines_program.update(|&(_, ref view, _, _, ref jitter)| {
@@ -120,8 +121,11 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
       jitter.update(line_jitter);
     });
     skybox_program.update(|&(ref proj, ref view, ref zfar)| {
+      // trick to cancel camera moves (only orientation is important for the skybox)
+      let transform = camera.repos(Position::new(0., 0., 0.));
+
       proj.update(camera.object);
-      view.update(camera.transform);
+      view.update(transform);
       zfar.update(ZFAR);
     });
 
