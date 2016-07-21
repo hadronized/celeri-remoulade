@@ -209,22 +209,23 @@ fn around_search_lower_cp<T>(cps: &Vec<Key<T>>, mut i: usize, t: Time) -> Option
   Some(i)
 }
 
+// FIXME: not sure we need mutability here
 /// Continuous animation.
 ///
 /// This type wraps a `A` as a function of time `T`. It has a simple semantic: `at`, giving the
 /// value at the wished time.
 pub struct Cont<'a, T, A> {
-  closure: Box<Fn(T) -> A + 'a>
+  closure: Box<FnMut(T) -> A + 'a>
 }
 
 impl<'a, T, A> Cont<'a, T, A> {
-  pub fn new<F>(f: F) -> Self where F: 'a + Fn(T) -> A {
+  pub fn new<F>(f: F) -> Self where F: 'a + FnMut(T) -> A {
     Cont {
       closure: Box::new(f)
     }
   }
 
-  pub fn at(&self, t: T) -> A {
+  pub fn at(&mut self, t: T) -> A {
     (self.closure)(t)
   }
 }

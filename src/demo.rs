@@ -1,3 +1,4 @@
+use ion::anim;
 use ion::device::Device;
 use ion::entity::*;
 use ion::objects::{new_cube, new_plane};
@@ -29,8 +30,6 @@ const CAMERA_FORWARD_SENSITIVITY: f32 = 0.1;
 const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, scroll: Scroll) -> Result<Box<FnMut() -> bool>, String> {
-  let mut dev = Device::new();
-
   let back_buffer = Framebuffer::default((w, h));
   let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w / 2, h / 2), 0).unwrap();
   let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w / 2, h / 2), 0).unwrap();
@@ -64,6 +63,11 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut cursor_at = [0., 0.]; // last cursor position known
   let mut cursor_left_down = false;
   let mut cursor_right_down = false;
+
+  // animation
+  let mut anim_cam = animation_camera(w, h);
+
+  let mut dev = Device::new();
 
   Ok(Box::new(move || {
     // FIXME: debug; use to alter the line jitter
@@ -106,6 +110,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     dev.recompute_playback_cursor();
     let t = dev.playback_cursor();
 
+    deb!("time {}", t);
+
+    let camera = anim_cam.at(t);
     // update the camera
     lines_program.update(|&(_, ref view, _, _, ref jitter)| {
       view.update(camera.transform);
@@ -242,4 +249,19 @@ fn handle_camera_keys(camera: &mut Entity<M44>, key: Key) {
     },
     _ => {}
   }
+}
+
+fn animation_camera<'a>(w: u32, h: u32) -> anim::Cont<'a, f32, Entity<M44>> {
+  // position keys
+  let mut pos_sampler = anim::Sampler::new();
+  let pos_keys = anim::AnimParam::new(
+    vec![
+      anim::Key::new(0., Position::new(0., 0., 0.)),
+      anim::Key::new(2., Position::new(10., 0., 0.))
+  ], anim::Interpolation::Cosine);
+
+  anim::Cont::new(move |t| {
+    let pos = pos_sampler.sample(t, &pos_keys, true).unwrap_or(Position::new(0., 0., 0.)); // FIXME: release
+    Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default().repos(pos))
+  })
 }
