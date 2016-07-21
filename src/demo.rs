@@ -42,14 +42,14 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let lines_program = new_lines_program().unwrap();
   let mut line_jitter = [1., 1.];
 
-  let mut camera = Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default().repos(Position::new(0., -0.2, -4.)));
+  let mut camera = Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default());
 
   let plane = Entity::new(new_plane(), Transform::default().reorient(X_AXIS, -f32::consts::FRAC_PI_2).rescale(Scale::uni(10.)));
   let mut lines = Vec::<Entity<Line>>::with_capacity(1000);
 
   for i in 0..lines.capacity() {
     let seed = i as f32 / lines.capacity() as f32;
-    lines.push(new_line_entity(&new_line(100, 1000, 1., 0.2 + seed.sin().abs(), seed), seed));
+    lines.push(new_line_entity(&new_line(100, 1000, 1., 0.2 + seed.sin().abs() * 0.1, seed), seed, seed * 50.));
   }
 
   let skybox = new_cube();
