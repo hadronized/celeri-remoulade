@@ -1,4 +1,4 @@
-use anim::{AnimParam, ControlPoint, Interpolation, Sampler};
+use anim::{AnimParam, Key, Interpolation, Sampler};
 use luminance::Mode;
 use luminance_gl::gl33::Tessellation;
 
@@ -49,8 +49,8 @@ pub fn new_cube() -> Tessellation {
 // Build a curve connected by segments.
 pub fn new_curve_2d(gap: f32, interpolation: Interpolation, points: &[(f32, f32)]) -> Tessellation {
   // convert 2D points into cps
-  let cps: Vec<_> = points.iter().map(|&(t, x)| ControlPoint::new(t, interpolation, x)).collect();
-  let param = AnimParam::new(cps);
+  let cps = points.iter().map(|&(t, x)| Key::new(t, x)).collect();
+  let param = AnimParam::new(cps, interpolation);
 
   let mut t = 0.;
   let mut sampler = Sampler::new();

@@ -4,20 +4,17 @@ use std::ops::{Add, Mul};
 pub type Time = f32;
 
 #[derive(Copy, Clone, Debug)]
-pub struct ControlPoint<T> {
-  /// Time at which the `ControlPoint` should be reached.
+pub struct Key<T> {
+  /// Time at which the `Key` should be reached.
   pub t: Time,
-  /// Interpolation to use.
-  pub interpolation: Interpolation,
   /// Actual value.
   pub value: T
 }
 
-impl<T> ControlPoint<T> {
-  pub fn new(t: Time, interpolation: Interpolation, value: T) -> Self {
-    ControlPoint {
+impl<T> Key<T> {
+  pub fn new(t: Time, value: T) -> Self {
+    Key {
       t: t,
-      interpolation: interpolation,
       value: value
     }
   }
@@ -25,23 +22,25 @@ impl<T> ControlPoint<T> {
 
 #[derive(Copy, Clone, Debug)]
 pub enum Interpolation {
-  /// Hold the `ControlPoint` until the next one is met.
+  /// Hold a `Key` until the next one is met.
   Hold,
-  /// Linear interpolation between the `ControlPoint` and the next one.
+  /// Linear interpolation between a `Key` and the next one.
   Linear,
-  /// Cosine interpolation between the `ControlPoint` and the next one.
+  /// Cosine interpolation between a `Key` and the next one.
   Cosine
 }
 
 #[derive(Debug)]
 pub struct AnimParam<T> {
-  control_points: Vec<ControlPoint<T>>
+  control_points: Vec<Key<T>>,
+  interpolation: Interpolation
 }
 
 impl<T> AnimParam<T> {
-  pub fn new(cps: Vec<ControlPoint<T>>) -> Self {
+  pub fn new(cps: Vec<Key<T>>, interpolation: Interpolation) -> Self {
     AnimParam {
-      control_points: cps
+      control_points: cps,
+      interpolation: interpolation
     }
   }
 }
@@ -52,7 +51,7 @@ pub struct AnimParamIterator<'a, T> where T: 'a {
 }
 
 impl<'a, T> Iterator for AnimParamIterator<'a, T> {
-  type Item = &'a ControlPoint<T>;
+  type Item = &'a Key<T>;
 
   fn next(&mut self) -> Option<Self::Item> {
     let r = self.anim_param.control_points.get(self.i);
@@ -66,7 +65,7 @@ impl<'a, T> Iterator for AnimParamIterator<'a, T> {
 }
 
 impl<'a, T> IntoIterator for &'a AnimParam<T> {
-  type Item = &'a ControlPoint<T>;
+  type Item = &'a Key<T>;
   type IntoIter = AnimParamIterator<'a, T>;
 
   fn into_iter(self) -> Self::IntoIter {
@@ -117,7 +116,7 @@ impl Sampler {
 
     let cp = &param.control_points[i];
 
-    Some(match cp.interpolation {
+    Some(match param.interpolation {
       Interpolation::Hold => cp.value,
       Interpolation::Linear => {
         let cp1 = &param.control_points[i+1];
@@ -137,12 +136,12 @@ impl Sampler {
 }
 
 // Normalize a time ([0;1]) given two control points.
-fn normalize_time<T>(t: Time, cp: &ControlPoint<T>, cp1: &ControlPoint<T>) -> Time {
+fn normalize_time<T>(t: Time, cp: &Key<T>, cp1: &Key<T>) -> Time {
   (t - cp.t) / (cp1.t - cp.t)
 }
 
 // Find the lower control point corresponding to a given time. Random version.
-fn binary_search_lower_cp<T>(cps: &Vec<ControlPoint<T>>, t: Time) -> Option<usize> {
+fn binary_search_lower_cp<T>(cps: &Vec<Key<T>>, t: Time) -> Option<usize> {
   let len = cps.len() as i32;
   if len < 2 {
     return None;
@@ -177,7 +176,7 @@ fn binary_search_lower_cp<T>(cps: &Vec<ControlPoint<T>>, t: Time) -> Option<usiz
 
 // Find the lower control point corresponding to a given time. Continuous version. `i` is the last
 // known found index.
-fn around_search_lower_cp<T>(cps: &Vec<ControlPoint<T>>, mut i: usize, t: Time) -> Option<usize> {
+fn around_search_lower_cp<T>(cps: &Vec<Key<T>>, mut i: usize, t: Time) -> Option<usize> {
   let len = cps.len();
 
   if len < 2 {
@@ -212,7 +211,7 @@ fn around_search_lower_cp<T>(cps: &Vec<ControlPoint<T>>, mut i: usize, t: Time) 
 
 #[test]
 fn test_binary_search_lower_cp0() {
-  let cps = Vec::<ControlPoint<f32>>::new();
+  let cps = Vec::<Key<f32>>::new();
 
   assert_eq!(binary_search_lower_cp(&cps, 0.), None);
   assert_eq!(binary_search_lower_cp(&cps, 2.), None);
@@ -224,9 +223,9 @@ fn test_binary_search_lower_cp0() {
 #[test]
 fn test_binary_search_lower_cp1() {
   let cps = vec![
-    ControlPoint::new(0., Interpolation::Hold, 10.),
-    ControlPoint::new(24., Interpolation::Hold, 100.),
-    ControlPoint::new(45., Interpolation::Hold, -3.34)
+    Key::new(0., 10.),
+    Key::new(24., 100.),
+    Key::new(45., -3.34)
   ];
 
   assert_eq!(binary_search_lower_cp(&cps, 0.), Some(0));
@@ -244,7 +243,7 @@ fn test_binary_search_lower_cp1() {
 
 #[test]
 fn test_around_search_lower_cp0() {
-  let cps = Vec::<ControlPoint<f32>>::new();
+  let cps = Vec::<Key<f32>>::new();
 
   assert_eq!(around_search_lower_cp(&cps, 0, 0.), None);
 }
@@ -252,9 +251,9 @@ fn test_around_search_lower_cp0() {
 #[test]
 fn test_around_search_lower_cp1() {
   let cps = vec![
-    ControlPoint::new(0., Interpolation::Hold, 10.),
-    ControlPoint::new(24., Interpolation::Hold, 100.),
-    ControlPoint::new(45., Interpolation::Hold, -3.34)
+    Key::new(0., 10.),
+    Key::new(24., 100.),
+    Key::new(45., -3.34)
   ];
 
   assert_eq!(around_search_lower_cp(&cps, 0, 20.), Some(0));
@@ -267,10 +266,10 @@ fn test_around_search_lower_cp1() {
 fn test_sampler_hold() {
   let mut sampler = Sampler::new();
   let p = AnimParam::new(vec![
-    ControlPoint::new(0., Interpolation::Hold, 10.),
-    ControlPoint::new(24., Interpolation::Hold, 100.),
-    ControlPoint::new(45., Interpolation::Hold, -3.34)
-  ]);
+    Key::new(0., 10.),
+    Key::new(24.,  100.),
+    Key::new(45.,  -3.34)
+  ], Interpolation::Hold);
 
   assert_eq!(sampler.sample(0., &p, true), Some(10.));
   assert_eq!(sampler.sample(2., &p, true), Some(10.));
@@ -286,9 +285,9 @@ fn test_sampler_hold() {
 fn test_sampler_linear() {
   let mut sampler = Sampler::new();
   let p = AnimParam::new(vec![
-    ControlPoint::new(0., Interpolation::Linear, 10.),
-    ControlPoint::new(10., Interpolation::Linear, 20.)
-  ]);
+    Key::new(0., 10.),
+    Key::new(10., 20.)
+  ], Interpolation::Linear);
 
   assert_eq!(sampler.sample(0., &p, true), Some(10.));
   assert_eq!(sampler.sample(10., &p, true), None);

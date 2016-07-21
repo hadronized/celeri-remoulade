@@ -1,4 +1,4 @@
-use ion::anim::{AnimParam, ControlPoint, Interpolation, Sampler};
+use ion::anim::{AnimParam, Key, Interpolation, Sampler};
 use ion::entity::Entity;
 use ion::transform::{Position, Transform};
 use luminance::{Mode, UniformUpdate};
@@ -58,12 +58,12 @@ pub fn new_line(points_in: usize, points_out: usize, gap: f32, smooth: f32, seed
     let a = smooth * noise2(t + seed, -f32::fract(t) * i as f32 * seed);
     let b = smooth * noise2(-t * seed, t - seed);
 
-    a_cps.push(ControlPoint::new(t, Interpolation::Cosine, a));
-    b_cps.push(ControlPoint::new(t, Interpolation::Cosine, b));
+    a_cps.push(Key::new(t, a));
+    b_cps.push(Key::new(t, b));
   }
 
-  let a_curve = AnimParam::new(a_cps);
-  let b_curve = AnimParam::new(b_cps);
+  let a_curve = AnimParam::new(a_cps, Interpolation::Cosine);
+  let b_curve = AnimParam::new(b_cps, Interpolation::Cosine);
 
   // create points by smoothing
   let mut x_points = Vec::with_capacity(points_out);
