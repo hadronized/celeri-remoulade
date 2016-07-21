@@ -8,6 +8,7 @@ use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot};
 use nalgebra::Rotate;
 use std::f32;
+use time;
 
 use procedural::gaussian;
 
@@ -75,6 +76,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut dev = Device::new();
 
   Ok(Box::new(move || {
+    let start_time = time::precise_time_ns();
+
     // FIXME: debug; use to alter the line jitter
     while let Ok(scroll) = scroll.try_recv() {
       line_jitter = [(line_jitter[0] + 0.025 * scroll[1] as f32).max(0.), (line_jitter[1] + 0.025 * scroll[1] as f32).max(0.)];
@@ -114,8 +117,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
     dev.recompute_playback_cursor();
     let t = dev.playback_cursor();
-
-    deb!("time {}", t);
 
     // TODO: comment that line to enable debug camera
     //camera = anim_cam.at(t);
@@ -202,6 +203,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                                                 None)
                            ])
     ]).run();
+
+    let end_time = time::precise_time_ns();
+    deb!("fps: {}", 1e9 / ((end_time - start_time) as f32));
 
     true
   }))
