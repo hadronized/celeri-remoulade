@@ -33,16 +33,16 @@ impl Line {
 pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32) -> Entity<Line> {
   let seed = seed + 1.;
 
-  let transform = Transform::default().translate(Position::new(0.1 * seed - X_OFFSET, 0., -Y_OFFSET));
+  let transform = Transform::default().translate(Position::new(seed * 50. - X_OFFSET, 0., -Y_OFFSET));
   //let color = color_palette([0.5, 0., 0.5], [0.5, 0.5, 0.5], [0.5882, 0.1803, 0.3608], [0.25, 0.8, 0.25], seed*0.005);
   // salmon color is .859, .188, .224
   let salmon = [0.859, 0.188, 0.224];
   let golden = [1., 0.6, 0.0515];
-  let color = lerp_color(&salmon, &golden, seed * 0.0005);
+  let color = lerp_color(&salmon, &golden, seed);
   let line = Line {
     tessellation: Tessellation::new(Mode::LineStrip, line, None),
     color: color,
-    size: (seed.sin() + 1.25).powf(2.)
+    size: 1.//(seed.sin() + 1.25).powf(2.)
   };
 
   Entity::new(line, transform)

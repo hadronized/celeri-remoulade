@@ -48,8 +48,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut lines = Vec::<Entity<Line>>::with_capacity(1000);
 
   for i in 0..lines.capacity() {
-    let seed = i as f32;
-    lines.push(new_line_entity(&new_line(100, 1000, 1., 0.2 + seed.sin().abs() * 0.1, seed), seed));
+    let seed = i as f32 / lines.capacity() as f32;
+    lines.push(new_line_entity(&new_line(100, 1000, 1., 0.2 + seed.sin().abs(), seed), seed));
   }
 
   let skybox = new_cube();
@@ -152,7 +152,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     ]).run();
 
 
-    Pipeline::new(&chromatic_aberration_buffer, [0., 0., 0., 1.], vec![
+    Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
       // skybox
       &ShadingCommand::new(&skybox_program,
                            |_|{}, 
@@ -183,21 +183,21 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     ]).run();
 
     // apply the chromatic shader and output directly into the back buffer
-    Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
-      &ShadingCommand::new(&chromatic_aberration_program,
-                           |&(ref tex, ref ires)| {
-                             tex.update(&chromatic_aberration_buffer.color_slot.texture);
-                             ires.update([1. / w as f32, 1. / h as f32]);
-                           },
-                           vec![
-                             RenderCommand::new(None,
-                                                true,
-                                                |_|{},
-                                                &plane.object,
-                                                1,
-                                                None)
-                           ])
-    ]).run();
+    //Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
+    //  &ShadingCommand::new(&chromatic_aberration_program,
+    //                       |&(ref tex, ref ires)| {
+    //                         tex.update(&chromatic_aberration_buffer.color_slot.texture);
+    //                         ires.update([1. / w as f32, 1. / h as f32]);
+    //                       },
+    //                       vec![
+    //                         RenderCommand::new(None,
+    //                                            true,
+    //                                            |_|{},
+    //                                            &plane.object,
+    //                                            1,
+    //                                            None)
+    //                       ])
+    //]).run();
 
     true
   }))
