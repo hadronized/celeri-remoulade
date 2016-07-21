@@ -7,9 +7,6 @@ use procedural::{color_palette, lerp_color, noise2};
 
 use shaders::lines::LinesUniforms;
 
-const X_OFFSET: f32 = 50.;
-const Y_OFFSET: f32 = 50.;
-
 pub struct Line {
   pub tessellation: Tessellation,
   pub color: [f32; 3],
@@ -30,8 +27,8 @@ impl Line {
   }
 }
 
-pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32, strips: f32) -> Entity<Line> {
-  let transform = Transform::default().translate(Position::new(seed * 50. - X_OFFSET, 0., -Y_OFFSET));
+pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32, strips: f32, x_offset: f32, z_offset: f32) -> Entity<Line> {
+  let transform = Transform::default().translate(Position::new(seed * 50. + x_offset, 0., z_offset));
   //let color = color_palette([0.5, 0., 0.5], [0.5, 0.5, 0.5], [0.5882, 0.1803, 0.3608], [0.25, 0.8, 0.25], seed*0.005);
   let salmon = [0.859, 0.188, 0.224];
   let golden = [1., 0.6, 0.0515];

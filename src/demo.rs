@@ -48,8 +48,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut lines = Vec::<Entity<Line>>::with_capacity(1000);
 
   for i in 0..lines.capacity() {
-    let seed = i as f32 / lines.capacity() as f32;
-    lines.push(new_line_entity(&new_line(100, 1000, 1., 0.2 + seed.sin().abs() * 0.1, seed), seed, seed * 50.));
+    let cap = lines.capacity() as f32;
+    let seed = i as f32 / cap;
+    lines.push(new_line_entity(&new_line(100, 1000, 1., 0.2 + seed.sin().abs() * 0.1, seed), seed, seed * 50., -25., -50.));
   }
 
   let skybox = new_cube();
