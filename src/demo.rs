@@ -112,7 +112,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
     deb!("time {}", t);
 
-    let camera = anim_cam.at(t);
+    camera = anim_cam.at(t);
+
     // update the camera
     lines_program.update(|&(_, ref view, _, _, ref jitter)| {
       view.update(camera.transform);
