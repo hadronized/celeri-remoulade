@@ -8,7 +8,7 @@ layout (location = 0) in vec3 co;\n\
 uniform mat4 proj;\n\
 uniform mat4 view;\n\
 uniform mat4 inst;\n\
-uniform vec2 jitter;\n\
+uniform float jitter;\n\
 \n\
 void main() {\n\
   vec3 p = co;\n\
@@ -24,7 +24,7 @@ void main() {\n\
   frag = vec4(color, 1.);\n\
 }";
 
-pub type LinesUniforms<'a> = (Uniform<M44>, UniformUpdate<'a, Transform>, UniformUpdate<'a, Transform>, Uniform<[f32; 3]>, Uniform<[f32; 2]>);
+pub type LinesUniforms<'a> = (Uniform<M44>, UniformUpdate<'a, Transform>, UniformUpdate<'a, Transform>, Uniform<[f32; 3]>, Uniform<f32>);
 
 pub type LinesProgram<'a> = Program<LinesUniforms<'a>>;
 

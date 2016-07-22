@@ -45,7 +45,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let lines_pp = new_lines_pp().unwrap();
   let lines_program = new_lines_program().unwrap();
 
-  let mut line_jitter = [1., 1.];
+  let mut line_jitter = 0.;
 
   let mut camera = Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default());
 
@@ -80,7 +80,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
     // FIXME: debug; use to alter the line jitter
     while let Ok(scroll) = scroll.try_recv() {
-      line_jitter = [(line_jitter[0] + 0.025 * scroll[1] as f32).max(0.), (line_jitter[1] + 0.025 * scroll[1] as f32).max(0.)];
+      line_jitter = (line_jitter + 0.025 * scroll[1] as f32).max(0.);
     }
 
     while let Ok((mouse_button, action)) = mouse.try_recv() {
