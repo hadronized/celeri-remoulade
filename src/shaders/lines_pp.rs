@@ -32,7 +32,7 @@ void main() {\n\
   vec4 color = vec4(0., 0., 0., 1.);\n\
 
   // chromatic aberration\n\
-  vec2 off = ires * pow(abs(length(v_screen_co)), 2.) * 3.;\n\
+  vec2 off = ires * pow(abs(length(v_screen_co) * 0.0000000001), 2.) * 3.;\n\
   float r0 = texture(tex, v_co - vec2(off.x, off.y)).r;\n\
   float r1 = texture(tex, v_co).r;\n\
   float r2 = texture(tex, v_co + vec2(off.x, off.y)).r;\n\

@@ -36,7 +36,7 @@ pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32, strips: f32, x_offset: f
   let line = Line {
     tessellation: Tessellation::new(Mode::LineStrip, line, None),
     color: color,
-    size: (seed.sin() + 1.25).powf(2.)
+    size: (noise2(seed * 100., -100. * seed.cos()).sin() + 1.25).powf(2.)
   };
 
   Entity::new(line, transform)

@@ -33,12 +33,12 @@ const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, scroll: Scroll) -> Result<Box<FnMut() -> bool>, String> {
   let back_buffer = Framebuffer::default((w, h));
-  let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w / 4, h / 4), 0).unwrap();
-  let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w / 4, h / 4), 0).unwrap();
+  let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
+  let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let pp_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
-
-  let bloom_kernel: Vec<_> = (-21..22).map(|i| gaussian(0., 6., 0.6 * i as f32)).collect();
+  
+  let bloom_kernel: Vec<_> = (-21..22).map(|i| gaussian(0., 6., 0.8 * i as f32)).collect();
   let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();
   let vblur_program = new_blur_program(&bloom_kernel, false).unwrap();
   let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
@@ -148,7 +148,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                              ires.update([1. / w as f32, 1. / h as f32]);
                            },
                            vec![
-                             RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
+                             RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::Zero)),
                                                 false,
                                                 |_|{},
                                                 &plane.object,
