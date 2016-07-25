@@ -11,25 +11,41 @@ pub struct Device {
   epoch: u64,
   /// Cached playback cursor.
   cursor: f32,
+  /// [debug] Total length of the demo.
+  length: f32 // FIXME: [debug]
 }
 
 const NANOSECOND_TH: f32 = 1. / 1e9;
 
 impl Device {
-  pub fn new() -> Self {
+  pub fn new(length: f32) -> Self {
     Device {
       epoch: time::precise_time_ns(),
       cursor: 0.,
+      length: length
     }
   }
 
   /// Recompute the playback cursor.
   pub fn recompute_playback_cursor(&mut self) {
-    self.cursor = (time::precise_time_ns() - self.epoch) as f32 * NANOSECOND_TH
+    self.cursor = (time::precise_time_ns() - self.epoch) as f32 * NANOSECOND_TH;
+
+    // loop the device if we hit the end of the demo
+    if self.cursor > self.length {
+      self.epoch = time::precise_time_ns();
+    }
   }
 
   /// Playback cursor in seconds.
   pub fn playback_cursor(&self) -> f32 {
     self.cursor
+  }
+
+  // FIXME: [debug]
+  /// [debug] Move the cursor around. Expect the input to be normalized.
+  pub fn set_cursor(&mut self, t: f32) {
+    assert!(t >= 0. && t <= 1.);
+
+    self.epoch = time::precise_time_ns() - (self.length * t * 1e9) as u64;
   }
 }

@@ -80,7 +80,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   // animation
   let mut anim_cam = animation_camera(w, h);
 
-  let mut dev = Device::new();
+  let mut dev = Device::new(10.);
 
   Ok(Box::new(move || {
     let start_time = time::precise_time_ns();
@@ -100,8 +100,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
           cursor_left_down = false;
 
           if cursor_distance(cursor_at, cursor_down_at) <= 4. {
-           if time_panel.is_cursor_in(cursor_at) { 
-              deb!("changing time to: {}", cursor_at[0] / w as f64);
+            if time_panel.is_cursor_in(cursor_at) { 
+              dev.set_cursor(cursor_at[0] as f32 / w as f32);
             }
           }
         },
@@ -136,6 +136,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
     dev.recompute_playback_cursor();
     let t = dev.playback_cursor();
+    deb!("t: {}", t);
 
     // TODO: comment that line to enable debug camera
     //camera = anim_cam.at(t);
