@@ -225,7 +225,10 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
       // render the GUI overlay
       &ShadingCommand::new(&gui_const_color_program,
                            |_| {},
-                           vec![time_panel.render_cmd(w as f32, h as f32)])
+                           vec![
+                             time_panel.back_render_cmd(w as f32, h as f32),
+                             time_panel.cursor_render_cmd(w as f32, h as f32, t / dev.playback_length())
+                           ])
     ]).run();
 
     let end_time = time::precise_time_ns();

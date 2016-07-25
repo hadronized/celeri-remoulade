@@ -48,4 +48,8 @@ impl Device {
 
     self.epoch = time::precise_time_ns() - (self.length * t * 1e9) as u64;
   }
+
+  pub fn playback_length(&self) -> f32 {
+    self.length
+  }
 }
