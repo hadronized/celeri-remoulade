@@ -67,6 +67,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   });
 
   let mut cursor_at = [0., 0.]; // last cursor position known
+  let mut cursor_down_at = [0., 0.]; // position where the cursor was pressed
   let mut cursor_left_down = false;
   let mut cursor_right_down = false;
 
@@ -87,12 +88,18 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
       match (mouse_button, action) {
         (MouseButton::Button1, Action::Press) => {
           cursor_left_down = true;
+          cursor_down_at = cursor_at;
         },
         (MouseButton::Button1, Action::Release) => {
           cursor_left_down = false;
+
+          if cursor_distance(cursor_at, cursor_down_at) <= 4. {
+            deb!("click!");
+          }
         },
         (MouseButton::Button2, Action::Press) => {
           cursor_right_down = true;
+          cursor_down_at = cursor_at;
         },
         (MouseButton::Button2, Action::Release) => {
           cursor_right_down = false;
@@ -205,7 +212,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     ]).run();
 
     let end_time = time::precise_time_ns();
-    deb!("fps: {}", 1e9 / ((end_time - start_time) as f32));
+    //deb!("fps: {}", 1e9 / ((end_time - start_time) as f32));
 
     true
   }))
@@ -217,12 +224,10 @@ fn handle_camera_cursor(camera: &mut Entity<M44>, left_down: bool, right_down: b
   if left_down {
     camera.transform = camera.orient(Y_AXIS, rel[0] as f32 * CAMERA_YAW_SENSITIVITY);
     camera.transform = camera.orient(X_AXIS, rel[1] as f32 * CAMERA_PITCH_SENSITIVITY);
-    deb!("camera: {:?}", camera.orientation);
   }
 
   if right_down {
     camera.transform = camera.orient(Z_AXIS, rel[0] as f32 * CAMERA_YAW_SENSITIVITY);
-    deb!("camera: {:?}", camera.orientation);
   }
 
   *cursor_at = cursor_now;
@@ -232,32 +237,26 @@ fn handle_camera_keys(camera: &mut Entity<M44>, key: Key) {
   match key {
     Key::A => {
       let left = camera.transform.orientation.inv_rotate(&(X_AXIS * CAMERA_STRAFE_SENSITIVITY));
-      deb!("camera: {:?}", camera.translation);
       camera.transform = camera.translate(left);
     },
     Key::D => {
       let right = camera.transform.orientation.inv_rotate(&(X_AXIS * -CAMERA_STRAFE_SENSITIVITY));
-      deb!("camera: {:?}", camera.translation);
       camera.transform = camera.translate(right);
     },
     Key::W => {
       let forward = camera.transform.orientation.inv_rotate(&(Z_AXIS * CAMERA_FORWARD_SENSITIVITY));
-      deb!("camera: {:?}", camera.translation);
       camera.transform = camera.translate(forward);
     },
     Key::S => {
       let backward = camera.transform.orientation.inv_rotate(&(Z_AXIS * -CAMERA_FORWARD_SENSITIVITY));
-      deb!("camera: {:?}", camera.translation);
       camera.transform = camera.translate(backward);
     },
     Key::R => {
       let upward = camera.transform.orientation.inv_rotate(&(Y_AXIS * -CAMERA_UPWARD_SENSITIVITY));
-      deb!("camera: {:?}", camera.translation);
       camera.transform = camera.translate(upward);
     },
     Key::F => {
       let downward = camera.transform.orientation.inv_rotate(&(Y_AXIS * CAMERA_UPWARD_SENSITIVITY));
-      deb!("camera: {:?}", camera.translation);
       camera.transform = camera.translate(downward);
     },
     _ => {}
@@ -277,4 +276,8 @@ fn animation_camera<'a>(w: u32, h: u32) -> anim::Cont<'a, f32, Entity<M44>> {
     let pos = pos_sampler.sample(t, &pos_keys, true).unwrap_or(Position::new(0., 0., 0.)); // FIXME: release
     Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default().repos(pos))
   })
+}
+
+fn cursor_distance(a: [f64; 2], b: [f64; 2]) -> f64 {
+  f64::sqrt((b[0] - a[0]).powf(2.) + (b[1] - a[1]).powf(2.))
 }
