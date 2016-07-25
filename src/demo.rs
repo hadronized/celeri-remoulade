@@ -10,6 +10,7 @@ use nalgebra::Rotate;
 use std::f32;
 use time;
 
+use gui::{TimePanel, cursor_distance};
 use procedural::gaussian;
 
 // parts
@@ -18,6 +19,7 @@ use parts::lines::*;
 // shaders
 use shaders::blur::*;
 use shaders::chromatic_aberration::*;
+use shaders::gui_const_color::*;
 use shaders::lines::*;
 use shaders::lines_pp::*;
 use shaders::skybox::*;
@@ -38,6 +40,10 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let pp_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   
+  // gui elements
+  let gui_const_color_program = new_gui_const_color_program().unwrap();
+  let time_panel = TimePanel::new([0., (h - 21) as f64], [w as f64, 20.], [1., 0.5, 0.5]);
+
   let bloom_kernel: Vec<_> = (-21..22).map(|i| gaussian(0., 6., 0.8 * i as f32)).collect();
   let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();
   let vblur_program = new_blur_program(&bloom_kernel, false).unwrap();
@@ -94,7 +100,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
           cursor_left_down = false;
 
           if cursor_distance(cursor_at, cursor_down_at) <= 4. {
-            deb!("click!");
+           if time_panel.is_cursor_in(cursor_at) { 
+              deb!("changing time to: {}", cursor_at[0] / w as f64);
+            }
           }
         },
         (MouseButton::Button2, Action::Press) => {
@@ -109,7 +117,11 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     }
 
     while let Ok(cursor_now) = mouse_mv.try_recv() {
-      handle_camera_cursor(&mut camera, cursor_left_down, cursor_right_down, cursor_now, &mut cursor_at);
+      if !time_panel.is_cursor_in(cursor_at) { // enable camera only if not in the GUI
+        handle_camera_cursor(&mut camera, cursor_left_down, cursor_right_down, cursor_now, &mut cursor_at);
+      }
+
+      cursor_at = cursor_now;
     }
 
     while let Ok((key, action)) = kbd.try_recv() {
@@ -194,8 +206,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            ])
     ]).run();
 
-    // apply the post-process shader and output directly into the back buffer
     Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
+      // apply the post-process shader and output directly into the back buffer
       &ShadingCommand::new(&lines_pp,
                            |&(ref tex, ref ires)| {
                              tex.update(&pp_buffer.color_slot.texture);
@@ -208,7 +220,11 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                                                 &plane.object,
                                                 1,
                                                 None)
-                           ])
+                           ]),
+      // render the GUI overlay
+      &ShadingCommand::new(&gui_const_color_program,
+                           |_| {},
+                           vec![time_panel.render_cmd(w as f32, h as f32)])
     ]).run();
 
     let end_time = time::precise_time_ns();
@@ -218,7 +234,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   }))
 }
 
-fn handle_camera_cursor(camera: &mut Entity<M44>, left_down: bool, right_down: bool, cursor_now: [f64; 2], cursor_at: &mut [f64; 2]) {
+fn handle_camera_cursor(camera: &mut Entity<M44>, left_down: bool, right_down: bool, cursor_now: [f64; 2], cursor_at: &[f64; 2]) {
   let rel = [cursor_now[0] - cursor_at[0], cursor_now[1] - cursor_at[1]];
 
   if left_down {
@@ -229,8 +245,6 @@ fn handle_camera_cursor(camera: &mut Entity<M44>, left_down: bool, right_down: b
   if right_down {
     camera.transform = camera.orient(Z_AXIS, rel[0] as f32 * CAMERA_YAW_SENSITIVITY);
   }
-
-  *cursor_at = cursor_now;
 }
 
 fn handle_camera_keys(camera: &mut Entity<M44>, key: Key) {
@@ -276,8 +290,4 @@ fn animation_camera<'a>(w: u32, h: u32) -> anim::Cont<'a, f32, Entity<M44>> {
     let pos = pos_sampler.sample(t, &pos_keys, true).unwrap_or(Position::new(0., 0., 0.)); // FIXME: release
     Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default().repos(pos))
   })
-}
-
-fn cursor_distance(a: [f64; 2], b: [f64; 2]) -> f64 {
-  f64::sqrt((b[0] - a[0]).powf(2.) + (b[1] - a[1]).powf(2.))
 }

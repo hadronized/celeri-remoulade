@@ -9,6 +9,7 @@ use ion::window::with_window;
 use std::env;
 
 mod demo; // most code of the demo goes there
+mod gui; // [dev only] the gui stuff overlay
 mod shaders; // hard shaders
 mod parts; // gathers logical parts of the demo in several modules for readability ffs
 mod procedural; // procedural shit; the stuff you all think it’s amazing while it’s just a fucking cosine
