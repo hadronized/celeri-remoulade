@@ -46,10 +46,10 @@ impl TimePanel {
     RenderCommand::new(None,
                        false,
                        move |&(ref off_dim, ref color): &(Uniform<[f32; 4]>, Uniform<[f32; 3]>)| {
-                         off_dim.update([(self.position[0] as f32) / w,
-                                          -self.position[1] as f32 / h,
-                                          self.dimension[0] as f32 * 0.005 / w,
-                                          self.dimension[1] as f32 / h]);
+                         off_dim.update([((self.position[0] as f32 + self.dimension[0] as f32 * 0.5) / w - 0.5) * 2.,
+                                         -((self.position[1] as f32 + self.dimension[1] as f32 * 0.5) / h - 0.5) * 2.,
+                                         self.dimension[0] as f32 * 0.005 / w,
+                                         self.dimension[1] as f32 / h]);
                          color.update(cursor_color);
                        },
                        &self.rect,
