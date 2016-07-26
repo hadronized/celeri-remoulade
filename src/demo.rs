@@ -281,6 +281,14 @@ fn handle_camera_keys(camera: &mut Entity<M44>, key: Key) {
   }
 }
 
+fn handle_device_keys(dev: &mut Device, key: Key) {
+  match key {
+    Key::Space => {
+    },
+    _ => {}
+  }
+}
+
 fn animation_camera<'a>(w: u32, h: u32) -> anim::Cont<'a, f32, Entity<M44>> {
   // position keys
   let mut pos_sampler = anim::Sampler::new();
