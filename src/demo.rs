@@ -131,6 +131,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
         }
       } else {
         handle_camera_keys(&mut camera, key);
+        handle_device_keys(&mut dev, key);
       }
     }
 
@@ -284,6 +285,7 @@ fn handle_camera_keys(camera: &mut Entity<M44>, key: Key) {
 fn handle_device_keys(dev: &mut Device, key: Key) {
   match key {
     Key::Space => {
+      dev.toggle();
     },
     _ => {}
   }

@@ -14,7 +14,7 @@ pub struct Device {
   /// [debug] Total length of the demo.
   length: f32, // FIXME: [debug]
   /// [debug] Whether it’s playing.
-  playing: bool
+  playing: bool,
 }
 
 const NANOSECOND_TH: f32 = 1. / 1e9;
@@ -57,5 +57,15 @@ impl Device {
 
   pub fn playback_length(&self) -> f32 {
     self.length
+  }
+
+  pub fn toggle(&mut self) {
+    self.playing = !self.playing;
+
+    // resynchronize epoch
+    if self.playing {
+      let c = self.cursor / self.length;
+      self.set_cursor(c);
+    }
   }
 }
