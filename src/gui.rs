@@ -41,15 +41,15 @@ impl TimePanel {
 
   pub fn cursor_render_cmd<'a>(&'a self, w: f32, h: f32, t: f32) -> RenderCommand<'a, GUIConstColorUniforms> {
     let cursor_color = [1. - self.color[0], 1. - self.color[1], 1. - self.color[2]];
+    let dimension = [self.dimension[0] as f32 * 0.005, self.dimension[1] as f32];
 
-    println!("cursor is now at: {}", t);
     RenderCommand::new(None,
                        false,
                        move |&(ref off_dim, ref color): &(Uniform<[f32; 4]>, Uniform<[f32; 3]>)| {
-                         off_dim.update([((self.position[0] as f32 + self.dimension[0] as f32 * 0.5) / w - 0.5) * 2.,
-                                         -((self.position[1] as f32 + self.dimension[1] as f32 * 0.5) / h - 0.5) * 2.,
-                                         self.dimension[0] as f32 * 0.005 / w,
-                                         self.dimension[1] as f32 / h]);
+                         off_dim.update([((self.position[0] as f32 + dimension[0] * 0.5 + t * self.dimension[0] as f32) / w - 0.5) * 2.,
+                                         -((self.position[1] as f32 + dimension[1] * 0.5) / h - 0.5) * 2.,
+                                         dimension[0] / w,
+                                         dimension[1] / h]);
                          color.update(cursor_color);
                        },
                        &self.rect,
