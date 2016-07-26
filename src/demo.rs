@@ -227,7 +227,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            |_| {},
                            vec![
                              time_panel.back_render_cmd(w as f32, h as f32),
-                             time_panel.cursor_render_cmd(w as f32, h as f32, t / dev.playback_length())
+                             //time_panel.cursor_render_cmd(w as f32, h as f32, t / dev.playback_length())
                            ])
     ]).run();
 
