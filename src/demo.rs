@@ -42,7 +42,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   
   // gui elements
   let gui_const_color_program = new_gui_const_color_program().unwrap();
-  let time_panel = TimePanel::new([0., (h - 21) as f64], [w as f64, 20.], [0.25, 0.8, 0.25]);
+  let time_panel = TimePanel::new([0., (h - 11) as f64], [w as f64, 10.], [0.25, 0.8, 0.25]);
 
   let bloom_kernel: Vec<_> = (-21..22).map(|i| gaussian(0., 6., 0.8 * i as f32)).collect();
   let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();
@@ -99,10 +99,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
         (MouseButton::Button1, Action::Release) => {
           cursor_left_down = false;
 
-          if cursor_distance(cursor_at, cursor_down_at) <= 4. {
-            if time_panel.is_cursor_in(cursor_at) { 
-              dev.set_cursor(cursor_at[0] as f32 / w as f32);
-            }
+          if time_panel.is_cursor_in(cursor_down_at) {
+            dev.set_cursor(cursor_at[0] as f32 / w as f32);
           }
         },
         (MouseButton::Button2, Action::Press) => {
@@ -117,7 +115,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     }
 
     while let Ok(cursor_now) = mouse_mv.try_recv() {
-      if !time_panel.is_cursor_in(cursor_at) { // enable camera only if not in the GUI
+      if time_panel.is_cursor_in(cursor_down_at) && cursor_left_down {
+        dev.set_cursor(cursor_at[0] as f32 / w as f32);
+      } else {
         handle_camera_cursor(&mut camera, cursor_left_down, cursor_right_down, cursor_now, &mut cursor_at);
       }
 
