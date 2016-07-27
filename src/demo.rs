@@ -83,6 +83,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut dev = Device::new(10.);
 
   Ok(Box::new(move || {
+    dev.recompute_playback_cursor();
+    let t = dev.playback_cursor();
+
     let start_time = time::precise_time_ns();
 
     // FIXME: debug; use to alter the line jitter
@@ -130,14 +133,10 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
           return false;
         }
       } else {
-        handle_camera_keys(&mut camera, key);
+        handle_camera_keys(&mut camera, key, t);
         handle_device_keys(&mut dev, key);
       }
     }
-
-    dev.recompute_playback_cursor();
-    let t = dev.playback_cursor();
-    deb!("t: {}", t);
 
     // TODO: comment that line to enable debug camera
     //camera = anim_cam.at(t);
@@ -145,7 +144,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     // update the camera
     lines_program.update(|&(_, ref view, _, _, ref jitter)| {
       view.update(camera.transform);
-      jitter.update(line_jitter);
+      jitter.update(line_jitter * t.cos());
     });
     skybox_program.update(|&(ref proj, ref view, ref zfar)| {
       // trick to cancel camera moves (only orientation is important for the skybox)
@@ -252,7 +251,7 @@ fn handle_camera_cursor(camera: &mut Entity<M44>, left_down: bool, right_down: b
   }
 }
 
-fn handle_camera_keys(camera: &mut Entity<M44>, key: Key) {
+fn handle_camera_keys(camera: &mut Entity<M44>, key: Key, t: f32) {
   match key {
     Key::A => {
       let left = camera.transform.orientation.inv_rotate(&(X_AXIS * CAMERA_STRAFE_SENSITIVITY));
@@ -277,6 +276,10 @@ fn handle_camera_keys(camera: &mut Entity<M44>, key: Key) {
     Key::F => {
       let downward = camera.transform.orientation.inv_rotate(&(Y_AXIS * CAMERA_UPWARD_SENSITIVITY));
       camera.transform = camera.translate(downward);
+    },
+    Key::C => { // print camera information on stdout (useful for animation keys)
+      info!("\u{256D} t:{}", t);
+      info!("\u{2570} camera:{:?}", camera.transform);
     },
     _ => {}
   }

@@ -68,4 +68,8 @@ impl Device {
       self.set_cursor(c);
     }
   }
+
+  pub fn is_playing(&self) -> bool {
+    self.playing
+  }
 }
