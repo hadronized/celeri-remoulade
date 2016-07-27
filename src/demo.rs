@@ -10,7 +10,7 @@ use nalgebra::Rotate;
 use std::f32;
 use time;
 
-use gui::{TimePanel, cursor_distance};
+use gui::TimePanel;
 use procedural::gaussian;
 
 // parts

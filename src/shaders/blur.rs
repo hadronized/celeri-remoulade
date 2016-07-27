@@ -1,9 +1,6 @@
 use ion::shader::{Program, ProgramError, new_program};
-use ion::objects::new_plane;
-use luminance::{Equation, Factor, Dim2, Flat, RGBA32F};
-use luminance::pipeline::{Pipeline, SomeShadingCommand};
-use luminance_gl::gl33::{Framebuffer, RenderCommand, ShadingCommand, Tessellation, Texture, Slot,
-                         Uniform};
+use luminance::{Dim2, Flat, RGBA32F};
+use luminance_gl::gl33::{Texture, Uniform};
 use std::fmt::Write;
 
 const BLUR_VS: &'static str = "\
