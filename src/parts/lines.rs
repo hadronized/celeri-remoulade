@@ -27,12 +27,12 @@ impl Line {
   }
 }
 
-pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32, strips: f32, x_offset: f32, z_offset: f32) -> Entity<Line> {
+pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32, x_offset: f32, z_offset: f32) -> Entity<Line> {
   let transform = Transform::default().translate(Position::new(seed * 50. + x_offset, 0., z_offset));
   //let color = color_palette([0.5, 0., 0.5], [0.5, 0.5, 0.5], [0.5882, 0.1803, 0.3608], [0.25, 0.8, 0.25], seed*0.005);
   let salmon = [0.859, 0.188, 0.224];
   let golden = [1., 0.6, 0.0515];
-  let color = lerp_color(&salmon, &golden, (seed * strips).cos().abs());
+  let color = lerp_color(&salmon, &golden, (seed * 100. * noise2(seed * 93743.3974, -34.)).cos().abs());
   let line = Line {
     tessellation: Tessellation::new(Mode::LineStrip, line, None),
     color: color,
