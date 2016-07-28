@@ -77,6 +77,17 @@ impl<'a, T> IntoIterator for &'a AnimParam<T> {
   }
 }
 
+/// Implement this trait if your type is a key you want to sample with.
+pub trait Lerp: Copy {
+  fn lerp(a: Self, b: Self, t: Time) -> Self;
+}
+
+impl<T> Lerp for T where T: Copy + Add<Output=T> + Mul<Time, Output=T> {
+  fn lerp(a: Self, b: Self, t: Time) -> Self {
+    a * (1. - t) + b * t
+  }
+}
+
 /// Samplers can sample `AnimParam` by providing a time. They should be mutable so that they can
 /// maintain an internal state for optimization purposes.
 pub struct Sampler {
@@ -96,7 +107,7 @@ impl Sampler {
 	/// faster than continuous sampling. Though, if you use continuous sampling, set `random_sampling`
 	/// to `false` for max speed performance.
   pub fn sample<T>(&mut self, t: Time, param: &AnimParam<T>, random_sampling: bool) -> Option<T>
-      where T: Copy + Add<T, Output=T> + Mul<f32, Output=T> {
+      where T: Lerp {
     let i = if random_sampling {
       binary_search_lower_cp(&param.control_points, t)
     } else {
@@ -123,14 +134,16 @@ impl Sampler {
         let cp1 = &param.control_points[i+1];
         let nt = normalize_time(t, cp, cp1);
 
-        cp.value * (1. - nt) + cp1.value * nt
+        //cp.value * (1. - nt) + cp1.value * nt
+        Lerp::lerp(cp.value, cp1.value, nt)
       },
       Interpolation::Cosine => {
         let cp1 = &param.control_points[i+1];
         let nt = normalize_time(t, cp, cp1);
         let cos_nt = (1. + f32::cos(nt * consts::PI)) * 0.5;
 
-        cp.value * cos_nt + cp1.value * (1. - cos_nt)
+        //cp.value * cos_nt + cp1.value * (1. - cos_nt)
+        Lerp::lerp(cp.value, cp1.value, cos_nt)
       }
     })
   }
@@ -245,9 +258,9 @@ fn test_binary_search_lower_cp0() {
 #[test]
 fn test_binary_search_lower_cp1() {
   let cps = vec![
-    Key::new(0., 10.),
-    Key::new(24., 100.),
-    Key::new(45., -3.34)
+    Key::new(0., 10., Interpolation::Hold),
+    Key::new(24., 100., Interpolation::Hold),
+    Key::new(45., -3.34, Interpolation::Hold)
   ];
 
   assert_eq!(binary_search_lower_cp(&cps, 0.), Some(0));
@@ -273,9 +286,9 @@ fn test_around_search_lower_cp0() {
 #[test]
 fn test_around_search_lower_cp1() {
   let cps = vec![
-    Key::new(0., 10.),
-    Key::new(24., 100.),
-    Key::new(45., -3.34)
+    Key::new(0., 10., Interpolation::Hold),
+    Key::new(24., 100., Interpolation::Hold),
+    Key::new(45., -3.34, Interpolation::Hold)
   ];
 
   assert_eq!(around_search_lower_cp(&cps, 0, 20.), Some(0));

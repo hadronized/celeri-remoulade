@@ -138,7 +138,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     }
 
     // TODO: comment that line to enable debug camera
-    camera = anim_cam.at(t);
+    //camera = anim_cam.at(t);
 
     // update the camera
     lines_program.update(|&(_, ref view, _, _, ref jitter)| {
@@ -278,7 +278,10 @@ fn handle_camera_keys(camera: &mut Entity<M44>, key: Key, t: f32) {
     },
     Key::C => { // print camera information on stdout (useful for animation keys)
       let p = camera.transform.translation;
+      let q = camera.transform.orientation.quat();
       info!("position: anim::Key::new({}, Position::new({}, {}, {})),", t, p[0], p[1], p[2]);
+      //info!("orientation: anim::Key::new({}, Position::new({}, {}, {}, {})),", t, q[0], q[1], q[2], q[3]);
+      info!("");
     },
     _ => {}
   }
