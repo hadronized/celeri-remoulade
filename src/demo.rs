@@ -6,7 +6,7 @@ use ion::projection::perspective;
 use ion::window::{Action, Key, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
 use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot};
-use nalgebra::Rotate;
+use nalgebra::{Quat, Rotate};
 use std::f32;
 use time;
 
@@ -138,7 +138,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     }
 
     // TODO: comment that line to enable debug camera
-    //camera = anim_cam.at(t);
+    camera = anim_cam.at(t);
 
     // update the camera
     lines_program.update(|&(_, ref view, _, _, ref jitter)| {
@@ -280,7 +280,7 @@ fn handle_camera_keys(camera: &mut Entity<M44>, key: Key, t: f32) {
       let p = camera.transform.translation;
       let q = camera.transform.orientation.quat();
       info!("position: anim::Key::new({}, Position::new({}, {}, {})),", t, p[0], p[1], p[2]);
-      //info!("orientation: anim::Key::new({}, Position::new({}, {}, {}, {})),", t, q[0], q[1], q[2], q[3]);
+      info!("orientation: anim::Key::new({}, Orientation::new_with_quat(Quat::new({}, {}, {}, {}))),", t, q[0], q[1], q[2], q[3]);
       info!("");
     },
     _ => {}
@@ -301,11 +301,27 @@ fn animation_camera<'a>(w: u32, h: u32) -> anim::Cont<'a, f32, Entity<M44>> {
   let mut pos_sampler = anim::Sampler::new();
   let pos_keys = anim::AnimParam::new(
     vec![
-      anim::Key::new(10., Position::new(-3.8999987, 0., -87.99923), anim::Interpolation::Cosine),
+      anim::Key::new(0., Position::new(0., 0., 0.), anim::Interpolation::Cosine),
+      anim::Key::new(3., Position::new(-2.4647493, -0.3964165, -6.503414), anim::Interpolation::Cosine),
+      anim::Key::new(6., Position::new(-3.0137098, -1.5013391, -14.876995), anim::Interpolation::Cosine),
+      anim::Key::new(10., Position::new(-2.5427933, -0.7344483, -14.866661), anim::Interpolation::Hold)
+  ]);
+
+  // orientation keys
+  let mut orient_sampler = anim::Sampler::new();
+  let orient_keys = anim::AnimParam::new(
+    vec![
+      anim::Key::new(0., Orientation::new_with_quat(Quat::new(0.8946971, -0.4456822, -0.029346175, -0.004680205)), anim::Interpolation::Cosine),
+      anim::Key::new(3., Orientation::new_with_quat(Quat::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), anim::Interpolation::Cosine),
+      anim::Key::new(6., Orientation::new_with_quat(Quat::new(0.97801495, 0.07943316, 0.17186677, 0.08734873)), anim::Interpolation::Cosine),
+      anim::Key::new(10., Orientation::new_with_quat(Quat::new(0.8595459, 0.10456929, -0.28957868, -0.4078911)), anim::Interpolation::Hold)
   ]);
 
   anim::Cont::new(move |t| {
     let pos = pos_sampler.sample(t, &pos_keys, true).unwrap_or(Position::new(0., 0., 0.)); // FIXME: release
-    Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default().repos(pos))
+    let orient = orient_sampler.sample(t, &orient_keys, true).unwrap_or(Orientation::new(X_AXIS)); // FIXME: release
+    let scale = Scale::default();
+
+    Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::new(pos, orient, scale))
   })
 }

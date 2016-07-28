@@ -14,6 +14,14 @@ pub struct Transform {
 }
 
 impl Transform {
+  pub fn new(translation: Translation, orientation: Orientation, scale: Scale) -> Self {
+    Transform {
+      translation: translation,
+      orientation: orientation,
+      scale: scale
+    }
+  }
+
   pub fn repos(self, pos: Position) -> Self {
     Transform { translation: pos, .. self }
   }

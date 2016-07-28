@@ -1,5 +1,6 @@
 use std::f32::consts;
 use std::ops::{Add, Mul};
+use nalgebra::{UnitQuat, Vec2, Vec3, Vec4};
 
 pub type Time = f32;
 
@@ -82,9 +83,36 @@ pub trait Lerp: Copy {
   fn lerp(a: Self, b: Self, t: Time) -> Self;
 }
 
-impl<T> Lerp for T where T: Copy + Add<Output=T> + Mul<Time, Output=T> {
+impl Lerp for f32 {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
     a * (1. - t) + b * t
+  }
+}
+
+impl Lerp for Vec2<f32> {
+  fn lerp(a: Self, b: Self, t: Time) -> Self {
+    a * (1. - t) + b * t
+  }
+}
+
+impl Lerp for Vec3<f32> {
+  fn lerp(a: Self, b: Self, t: Time) -> Self {
+    a * (1. - t) + b * t
+  }
+}
+
+impl Lerp for Vec4<f32> {
+  fn lerp(a: Self, b: Self, t: Time) -> Self {
+    a * (1. - t) + b * t
+  }
+}
+
+impl Lerp for UnitQuat<f32> {
+  fn lerp(a: Self, b: Self, t: Time) -> Self {
+    let qa = a.quat();
+    let qb = b.quat();
+
+    UnitQuat::new_with_quat(*qa * (1. - t) + *qb * t)
   }
 }
 
@@ -143,7 +171,7 @@ impl Sampler {
         let cos_nt = (1. + f32::cos(nt * consts::PI)) * 0.5;
 
         //cp.value * cos_nt + cp1.value * (1. - cos_nt)
-        Lerp::lerp(cp.value, cp1.value, cos_nt)
+        Lerp::lerp(cp1.value, cp.value, cos_nt)
       }
     })
   }
