@@ -54,12 +54,12 @@ pub fn new_line(points_in: usize, points_out: usize, gap: f32, smooth: f32, seed
     let a = smooth * noise2(t + seed, -f32::fract(t) * i as f32 * seed);
     let b = smooth * noise2(-t * seed, t - seed);
 
-    a_cps.push(Key::new(t, a));
-    b_cps.push(Key::new(t, b));
+    a_cps.push(Key::new(t, a, Interpolation::Cosine));
+    b_cps.push(Key::new(t, b, Interpolation::Cosine));
   }
 
-  let a_curve = AnimParam::new(a_cps, Interpolation::Cosine);
-  let b_curve = AnimParam::new(b_cps, Interpolation::Cosine);
+  let a_curve = AnimParam::new(a_cps);
+  let b_curve = AnimParam::new(b_cps);
 
   // create points by smoothing
   let mut x_points = Vec::with_capacity(points_out);

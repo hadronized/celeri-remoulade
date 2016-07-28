@@ -8,14 +8,17 @@ pub struct Key<T> {
   /// Time at which the `Key` should be reached.
   pub t: Time,
   /// Actual value.
-  pub value: T
+  pub value: T,
+  /// Interpolation mode.
+  pub interpolation: Interpolation
 }
 
 impl<T> Key<T> {
-  pub fn new(t: Time, value: T) -> Self {
+  pub fn new(t: Time, value: T, interpolation: Interpolation) -> Self {
     Key {
       t: t,
-      value: value
+      value: value,
+      interpolation: interpolation
     }
   }
 }
@@ -33,14 +36,12 @@ pub enum Interpolation {
 #[derive(Debug)]
 pub struct AnimParam<T> {
   control_points: Vec<Key<T>>,
-  interpolation: Interpolation
 }
 
 impl<T> AnimParam<T> {
-  pub fn new(cps: Vec<Key<T>>, interpolation: Interpolation) -> Self {
+  pub fn new(cps: Vec<Key<T>>) -> Self {
     AnimParam {
-      control_points: cps,
-      interpolation: interpolation
+      control_points: cps
     }
   }
 }
@@ -116,7 +117,7 @@ impl Sampler {
 
     let cp = &param.control_points[i];
 
-    Some(match param.interpolation {
+    Some(match cp.interpolation {
       Interpolation::Hold => cp.value,
       Interpolation::Linear => {
         let cp1 = &param.control_points[i+1];
@@ -287,10 +288,10 @@ fn test_around_search_lower_cp1() {
 fn test_sampler_hold() {
   let mut sampler = Sampler::new();
   let p = AnimParam::new(vec![
-    Key::new(0., 10.),
-    Key::new(24.,  100.),
-    Key::new(45.,  -3.34)
-  ], Interpolation::Hold);
+    Key::new(0., 10., Interpolation::Hold),
+    Key::new(24.,  100., Interpolation::Hold),
+    Key::new(45.,  -3.34, Interpolation::Hold)
+  ]);
 
   assert_eq!(sampler.sample(0., &p, true), Some(10.));
   assert_eq!(sampler.sample(2., &p, true), Some(10.));
@@ -306,9 +307,9 @@ fn test_sampler_hold() {
 fn test_sampler_linear() {
   let mut sampler = Sampler::new();
   let p = AnimParam::new(vec![
-    Key::new(0., 10.),
-    Key::new(10., 20.)
-  ], Interpolation::Linear);
+    Key::new(0., 10., Interpolation::Linear),
+    Key::new(10., 20., Interpolation::Linear)
+  ]);
 
   assert_eq!(sampler.sample(0., &p, true), Some(10.));
   assert_eq!(sampler.sample(10., &p, true), None);

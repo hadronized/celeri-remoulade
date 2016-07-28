@@ -298,8 +298,8 @@ fn animation_camera<'a>(w: u32, h: u32) -> anim::Cont<'a, f32, Entity<M44>> {
   let mut pos_sampler = anim::Sampler::new();
   let pos_keys = anim::AnimParam::new(
     vec![
-      anim::Key::new(10., Position::new(-3.8999987, 0., -87.99923)),
-  ], anim::Interpolation::Cosine);
+      anim::Key::new(10., Position::new(-3.8999987, 0., -87.99923), anim::Interpolation::Cosine),
+  ]);
 
   anim::Cont::new(move |t| {
     let pos = pos_sampler.sample(t, &pos_keys, true).unwrap_or(Position::new(0., 0., 0.)); // FIXME: release
