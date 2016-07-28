@@ -79,7 +79,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   // animation
   let mut anim_cam = animation_camera(w, h);
 
-  let mut dev = Device::new(10.);
+  let mut dev = Device::new(90.);
 
   Ok(Box::new(move || {
     dev.recompute_playback_cursor();
@@ -138,7 +138,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     }
 
     // TODO: comment that line to enable debug camera
-    //camera = anim_cam.at(t);
+    camera = anim_cam.at(t);
 
     // update the camera
     lines_program.update(|&(_, ref view, _, _, ref jitter)| {
@@ -277,8 +277,8 @@ fn handle_camera_keys(camera: &mut Entity<M44>, key: Key, t: f32) {
       camera.transform = camera.translate(downward);
     },
     Key::C => { // print camera information on stdout (useful for animation keys)
-      info!("\u{256D} t:{}", t);
-      info!("\u{2570} camera:{:?}", camera.transform);
+      let p = camera.transform.translation;
+      info!("position: anim::Key::new({}, Position::new({}, {}, {})),", t, p[0], p[1], p[2]);
     },
     _ => {}
   }
@@ -298,8 +298,7 @@ fn animation_camera<'a>(w: u32, h: u32) -> anim::Cont<'a, f32, Entity<M44>> {
   let mut pos_sampler = anim::Sampler::new();
   let pos_keys = anim::AnimParam::new(
     vec![
-      anim::Key::new(0., Position::new(0., 0., 0.)),
-      anim::Key::new(2., Position::new(10., 0., 0.))
+      anim::Key::new(10., Position::new(-3.8999987, 0., -87.99923)),
   ], anim::Interpolation::Cosine);
 
   anim::Cont::new(move |t| {
