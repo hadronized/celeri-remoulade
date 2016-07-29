@@ -102,7 +102,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
           cursor_left_down = false;
 
           if time_panel.is_cursor_in(cursor_down_at) {
-            dev.set_cursor(cursor_at[0] as f32 / w as f32);
+            let c = cursor_at[0] as f32 / w as f32;
+            dev.set_cursor(c.min(1.).max(0.));
           }
         },
         (MouseButton::Button2, Action::Press) => {
@@ -118,7 +119,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
     while let Ok(cursor_now) = mouse_mv.try_recv() {
       if time_panel.is_cursor_in(cursor_down_at) && cursor_left_down {
-        dev.set_cursor(cursor_at[0] as f32 / w as f32);
+        let c = cursor_at[0] as f32 / w as f32;
+        dev.set_cursor(c.min(1.).max(0.));
       } else {
         handle_camera_cursor(&mut camera, cursor_left_down, cursor_right_down, cursor_now, &mut cursor_at);
       }
