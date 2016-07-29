@@ -1,6 +1,6 @@
 use std::f32::consts;
 use std::ops::{Add, Mul};
-use nalgebra::{UnitQuat, Vec2, Vec3, Vec4};
+use nalgebra::{UnitQuaternion, Vector2, Vector3, Vector4};
 
 pub type Time = f32;
 
@@ -108,31 +108,32 @@ impl Interpolate for f32 {
   }
 }
 
-impl Interpolate for Vec2<f32> {
+impl Interpolate for Vector2<f32> {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
     add_mul_lerp(a, b, t)
   }
 
 }
 
-impl Interpolate for Vec3<f32> {
+impl Interpolate for Vector3<f32> {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
     add_mul_lerp(a, b, t)
   }
 }
 
-impl Interpolate for Vec4<f32> {
+impl Interpolate for Vector4<f32> {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
     add_mul_lerp(a, b, t)
   }
 }
 
-impl Interpolate for UnitQuat<f32> {
+impl Interpolate for UnitQuaternion<f32> {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
-    let qa = a.quat();
-    let qb = b.quat();
-
-    UnitQuat::new_with_quat(*qa * (1. - t) + *qb * t)
+    if t == 0. {
+      a
+    } else {
+      a * (a.powf(-1.) * b).powf(t)
+    }
   }
 }
 

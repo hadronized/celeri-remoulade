@@ -6,7 +6,7 @@ use ion::projection::perspective;
 use ion::window::{Action, Key, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
 use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot};
-use nalgebra::{Quat, Rotate};
+use nalgebra::{Quaternion, Rotate};
 use std::f32;
 use time;
 
@@ -255,34 +255,34 @@ fn handle_camera_cursor(camera: &mut Entity<M44>, left_down: bool, right_down: b
 fn handle_camera_keys(camera: &mut Entity<M44>, key: Key, t: f32) {
   match key {
     Key::A => {
-      let left = camera.transform.orientation.inv_rotate(&(X_AXIS * CAMERA_STRAFE_SENSITIVITY));
+      let left = camera.transform.orientation.inverse_rotate(&(X_AXIS * CAMERA_STRAFE_SENSITIVITY));
       camera.transform = camera.translate(left);
     },
     Key::D => {
-      let right = camera.transform.orientation.inv_rotate(&(X_AXIS * -CAMERA_STRAFE_SENSITIVITY));
+      let right = camera.transform.orientation.inverse_rotate(&(X_AXIS * -CAMERA_STRAFE_SENSITIVITY));
       camera.transform = camera.translate(right);
     },
     Key::W => {
-      let forward = camera.transform.orientation.inv_rotate(&(Z_AXIS * CAMERA_FORWARD_SENSITIVITY));
+      let forward = camera.transform.orientation.inverse_rotate(&(Z_AXIS * CAMERA_FORWARD_SENSITIVITY));
       camera.transform = camera.translate(forward);
     },
     Key::S => {
-      let backward = camera.transform.orientation.inv_rotate(&(Z_AXIS * -CAMERA_FORWARD_SENSITIVITY));
+      let backward = camera.transform.orientation.inverse_rotate(&(Z_AXIS * -CAMERA_FORWARD_SENSITIVITY));
       camera.transform = camera.translate(backward);
     },
     Key::R => {
-      let upward = camera.transform.orientation.inv_rotate(&(Y_AXIS * -CAMERA_UPWARD_SENSITIVITY));
+      let upward = camera.transform.orientation.inverse_rotate(&(Y_AXIS * -CAMERA_UPWARD_SENSITIVITY));
       camera.transform = camera.translate(upward);
     },
     Key::F => {
-      let downward = camera.transform.orientation.inv_rotate(&(Y_AXIS * CAMERA_UPWARD_SENSITIVITY));
+      let downward = camera.transform.orientation.inverse_rotate(&(Y_AXIS * CAMERA_UPWARD_SENSITIVITY));
       camera.transform = camera.translate(downward);
     },
     Key::C => { // print camera information on stdout (useful for animation keys)
       let p = camera.transform.translation;
-      let q = camera.transform.orientation.quat();
+      let q = camera.transform.orientation.quaternion();
       info!("position: anim::Key::new({}, Position::new({}, {}, {})),", t, p[0], p[1], p[2]);
-      info!("orientation: anim::Key::new({}, Orientation::new_with_quat(Quat::new({}, {}, {}, {}))),", t, q[0], q[1], q[2], q[3]);
+      info!("orientation: anim::Key::new({}, Orientation::new_with_quaternion(Quaternion::new({}, {}, {}, {}))),", t, q[0], q[1], q[2], q[3]);
       info!("");
     },
     _ => {}
@@ -313,10 +313,10 @@ fn animation_camera<'a>(w: u32, h: u32) -> anim::Cont<'a, f32, Entity<M44>> {
   let mut orient_sampler = anim::Sampler::new();
   let orient_keys = anim::AnimParam::new(
     vec![
-      anim::Key::new(0., Orientation::new_with_quat(Quat::new(0.8946971, -0.4456822, -0.029346175, -0.004680205)), anim::Interpolation::Cosine),
-      anim::Key::new(3., Orientation::new_with_quat(Quat::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), anim::Interpolation::Cosine),
-      anim::Key::new(6., Orientation::new_with_quat(Quat::new(0.97801495, 0.07943316, 0.17186677, 0.08734873)), anim::Interpolation::Cosine),
-      anim::Key::new(10., Orientation::new_with_quat(Quat::new(0.8595459, 0.10456929, -0.28957868, -0.4078911)), anim::Interpolation::Hold)
+      anim::Key::new(0., Orientation::new_with_quaternion(Quaternion::new(0.8946971, -0.4456822, -0.029346175, -0.004680205)), anim::Interpolation::Cosine),
+      anim::Key::new(3., Orientation::new_with_quaternion(Quaternion::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), anim::Interpolation::Cosine),
+      anim::Key::new(6., Orientation::new_with_quaternion(Quaternion::new(0.97801495, 0.07943316, 0.17186677, 0.08734873)), anim::Interpolation::Cosine),
+      anim::Key::new(10., Orientation::new_with_quaternion(Quaternion::new(0.8595459, 0.10456929, -0.28957868, -0.4078911)), anim::Interpolation::Hold)
   ]);
 
   anim::Cont::new(move |t| {

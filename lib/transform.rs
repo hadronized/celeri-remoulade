@@ -1,10 +1,10 @@
 use luminance::linear::M44;
 use luminance::shader::uniform::UniformUpdate;
 use luminance_gl::gl33::Uniform;
-use nalgebra::{ToHomogeneous, UnitQuat, normalize};
+use nalgebra::{ToHomogeneous, UnitQuaternion, normalize};
 use std::default::Default;
 
-pub use nalgebra::{Mat4, Vec3};
+pub use nalgebra::{Matrix4, Vector3};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Transform {
@@ -31,11 +31,11 @@ impl Transform {
   }
 
   pub fn reorient(self, axis: Axis, phi: f32) -> Self {
-    Transform { orientation: UnitQuat::new(normalize(&axis) * phi), .. self }
+    Transform { orientation: UnitQuaternion::new(normalize(&axis) * phi), .. self }
   }
 
   pub fn orient(self, axis: Axis, phi: f32) -> Self {
-    Transform { orientation: UnitQuat::new(normalize(&axis) * phi) * self.orientation, .. self }
+    Transform { orientation: UnitQuaternion::new(normalize(&axis) * phi) * self.orientation, .. self }
   }
 
   pub fn set_uniform_scale(self, scale: f32) -> Self {
@@ -56,12 +56,12 @@ impl Transform {
     Transform { scale: new_scale, .. self }
   }
 
-  pub fn to_inst_mat(&self) -> Mat4<f32> {
-    translation_matrix(self.translation) * self.scale.to_mat() * self.orientation.to_rot().to_homogeneous()
+  pub fn to_inst_mat(&self) -> Matrix4<f32> {
+    translation_matrix(self.translation) * self.scale.to_mat() * self.orientation.to_rotation_matrix().to_homogeneous()
   }
 
-  pub fn to_view_mat(&self) -> Mat4<f32> {
-    self.orientation.to_rot().to_homogeneous() * translation_matrix(self.translation) * self.scale.to_mat()
+  pub fn to_view_mat(&self) -> Matrix4<f32> {
+    self.orientation.to_rotation_matrix().to_homogeneous() * translation_matrix(self.translation) * self.scale.to_mat()
   }
 
   pub fn as_inst_uniform<'a>(u: Uniform<M44>) -> UniformUpdate<'a, Self> {
@@ -78,17 +78,17 @@ impl Transform {
 impl Default for Transform {
   fn default() -> Self {
     Transform {
-      translation: Vec3::new(0., 0., 0.),
-      orientation: UnitQuat::new(Vec3::new(0., 0., 0.)),
+      translation: Vector3::new(0., 0., 0.),
+      orientation: UnitQuaternion::new(Vector3::new(0., 0., 0.)),
       scale: Scale::default()
     }
   }
 }
 
-pub type Translation = Vec3<f32>;
-pub type Axis = Vec3<f32>;
-pub type Position = Vec3<f32>;
-pub type Orientation = UnitQuat<f32>;
+pub type Translation = Vector3<f32>;
+pub type Axis = Vector3<f32>;
+pub type Position = Vector3<f32>;
+pub type Orientation = UnitQuaternion<f32>;
 
 pub const X_AXIS: Axis = Axis { x: 1., y: 0., z: 0. };
 pub const Y_AXIS: Axis = Axis { x: 0., y: 1., z: 0. };
@@ -119,8 +119,8 @@ impl Scale {
     }
   }
 
-  pub fn to_mat(&self) -> Mat4<f32> {
-    Mat4::new(
+  pub fn to_mat(&self) -> Matrix4<f32> {
+    Matrix4::new(
       self.x,     0.,     0., 0.,
           0., self.y,     0., 0.,
           0.,     0., self.z, 0.,
@@ -129,8 +129,8 @@ impl Scale {
   }
 }
 
-fn translation_matrix(v: Translation) -> Mat4<f32> {
-  Mat4::new(
+fn translation_matrix(v: Translation) -> Matrix4<f32> {
+  Matrix4::new(
     1., 0., 0., v.x,
     0., 1., 0., v.y,
     0., 0., 1., v.z,
