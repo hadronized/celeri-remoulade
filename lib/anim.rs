@@ -79,41 +79,66 @@ impl<'a, T> IntoIterator for &'a AnimParam<T> {
 }
 
 /// Implement this trait if your type is a key you want to sample with.
-pub trait Lerp: Copy {
+pub trait Interpolate: Copy {
+  /// Linear interpolation.
   fn lerp(a: Self, b: Self, t: Time) -> Self;
-}
-
-impl Lerp for f32 {
-  fn lerp(a: Self, b: Self, t: Time) -> Self {
-    a * (1. - t) + b * t
+  /// Cubic hermite interpolation.
+  fn cubic_hermite(x: (Self, Time), a: (Self, Time), b: (Self, Time), y: (Self, Time), t: Time) -> Self {
+    a.0
   }
 }
 
-impl Lerp for Vec2<f32> {
+impl Interpolate for f32 {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
-    a * (1. - t) + b * t
+    add_mul_lerp(a, b, t)
+  }
+
+  fn cubic_hermite(x: (Self, Time), a: (Self, Time), b: (Self, Time), y: (Self, Time), t: Time) -> Self {
+    // time stuff
+    let t2 = t * t;
+    let t3 = t2 * t;
+    let two_t3 = 2. * t3;
+    let three_t2 = 3. * t2;
+
+    // tangents
+    let m0 = (b.0 - x.0) / (b.1 - x.1);
+		let m1 = (y.0 - a.0) / (y.1 - a.1);
+
+    a.0 * (two_t3 - three_t2 + 1.) + m0 * (t3 - 2. * t2 + t) + b.0 * (-two_t3 + three_t2) + m1 * (t3 - t2)
   }
 }
 
-impl Lerp for Vec3<f32> {
+impl Interpolate for Vec2<f32> {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
-    a * (1. - t) + b * t
+    add_mul_lerp(a, b, t)
+  }
+
+}
+
+impl Interpolate for Vec3<f32> {
+  fn lerp(a: Self, b: Self, t: Time) -> Self {
+    add_mul_lerp(a, b, t)
   }
 }
 
-impl Lerp for Vec4<f32> {
+impl Interpolate for Vec4<f32> {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
-    a * (1. - t) + b * t
+    add_mul_lerp(a, b, t)
   }
 }
 
-impl Lerp for UnitQuat<f32> {
+impl Interpolate for UnitQuat<f32> {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
     let qa = a.quat();
     let qb = b.quat();
 
     UnitQuat::new_with_quat(*qa * (1. - t) + *qb * t)
   }
+}
+
+// Default implementation of Interpolate::lerp if the type is Add<Output=T> + Mul<Time, Output=T>.
+fn add_mul_lerp<T>(a: T, b: T, t: Time) -> T where T: Add<Output=T> + Mul<Time, Output=T> {
+  a * (1. - t) + b * t
 }
 
 /// Samplers can sample `AnimParam` by providing a time. They should be mutable so that they can
@@ -135,7 +160,7 @@ impl Sampler {
 	/// faster than continuous sampling. Though, if you use continuous sampling, set `random_sampling`
 	/// to `false` for max speed performance.
   pub fn sample<T>(&mut self, t: Time, param: &AnimParam<T>, random_sampling: bool) -> Option<T>
-      where T: Lerp {
+      where T: Interpolate {
     let i = if random_sampling {
       binary_search_lower_cp(&param.control_points, t)
     } else {
@@ -162,14 +187,14 @@ impl Sampler {
         let cp1 = &param.control_points[i+1];
         let nt = normalize_time(t, cp, cp1);
 
-        Lerp::lerp(cp.value, cp1.value, nt)
+        Interpolate::lerp(cp.value, cp1.value, nt)
       },
       Interpolation::Cosine => {
         let cp1 = &param.control_points[i+1];
         let nt = normalize_time(t, cp, cp1);
         let cos_nt = (1. - f32::cos(nt * consts::PI)) * 0.5;
 
-        Lerp::lerp(cp.value, cp1.value, cos_nt)
+        Interpolate::lerp(cp.value, cp1.value, cos_nt)
       }
     })
   }
