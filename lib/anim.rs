@@ -162,16 +162,14 @@ impl Sampler {
         let cp1 = &param.control_points[i+1];
         let nt = normalize_time(t, cp, cp1);
 
-        //cp.value * (1. - nt) + cp1.value * nt
         Lerp::lerp(cp.value, cp1.value, nt)
       },
       Interpolation::Cosine => {
         let cp1 = &param.control_points[i+1];
         let nt = normalize_time(t, cp, cp1);
-        let cos_nt = (1. + f32::cos(nt * consts::PI)) * 0.5;
+        let cos_nt = (1. - f32::cos(nt * consts::PI)) * 0.5;
 
-        //cp.value * cos_nt + cp1.value * (1. - cos_nt)
-        Lerp::lerp(cp1.value, cp.value, cos_nt)
+        Lerp::lerp(cp.value, cp1.value, cos_nt)
       }
     })
   }
