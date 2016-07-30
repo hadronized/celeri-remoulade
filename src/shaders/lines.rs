@@ -9,11 +9,12 @@ uniform mat4 proj;\n\
 uniform mat4 view;\n\
 uniform mat4 inst;\n\
 uniform float jitter;\n\
+uniform float curvature;\n\
 \n\
 void main() {\n\
   vec3 p = co;\n\
   p.xy *= jitter;\n\
-  p.y += pow(p.z * 0.1, 2.);\n\
+  p.y += pow(p.z * 0.1, 2.) * curvature;\n\
   gl_Position = proj * view * inst * vec4(p, 1.);\n\
 }";
 
@@ -25,7 +26,12 @@ void main() {\n\
   frag = vec4(color, 1.);\n\
 }";
 
-pub type LinesUniforms<'a> = (Uniform<M44>, UniformUpdate<'a, Transform>, UniformUpdate<'a, Transform>, Uniform<[f32; 3]>, Uniform<f32>);
+pub type LinesUniforms<'a> = (Uniform<M44>,
+                              UniformUpdate<'a, Transform>,
+                              UniformUpdate<'a, Transform>,
+                              Uniform<[f32; 3]>,
+                              Uniform<f32>,
+                              Uniform<f32>);
 
 pub type LinesProgram<'a> = Program<LinesUniforms<'a>>;
 
@@ -36,7 +42,8 @@ pub fn new_lines_program<'a>() -> Result<LinesProgram<'a>, ProgramError> {
     let inst = Transform::as_inst_uniform(try!(proxy.uniform("inst")));
     let color = try!(proxy.uniform("color"));
     let jitter = try!(proxy.uniform("jitter"));
+    let curvature = try!(proxy.uniform("curvature"));
 
-    Ok((proj, view, inst, color, jitter))
+    Ok((proj, view, inst, color, jitter, curvature))
   })
 }

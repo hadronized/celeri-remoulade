@@ -292,6 +292,23 @@ impl<'a, T, A> Cont<'a, T, A> {
   }
 }
 
+#[macro_export]
+macro_rules! simple_animation {
+  ($name:ident, $t:ty, $def:expr, [ $($key:expr),* ]) => {
+    fn $name<'a>() -> anim::Cont<'a, f32, $t> {
+      let mut sampler = anim::Sampler::new();
+      let keys = anim::AnimParam::new(
+        vec![
+          $($key),*
+      ]);
+
+      anim::Cont::new(move |t| {
+        sampler.sample(t, &keys, true).unwrap_or($def)
+      })
+    }
+  }
+}
+
 #[test]
 fn test_binary_search_lower_cp0() {
   let cps = Vec::<Key<f32>>::new();

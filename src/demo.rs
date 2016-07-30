@@ -68,7 +68,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let skybox_program = new_skybox_program().unwrap();
 
   // set camera projection
-  lines_program.update(|&(ref proj, _, _, _, _)| {
+  lines_program.update(|&(ref proj, _, _, _, _, _)| {
     proj.update(camera.object);
   });
 
@@ -81,6 +81,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut anim_cam = animation_camera(w, h);
   let mut anim_color_mask = animation_color_mask();
   let mut anim_chromatic_aberration = animation_chromatic_aberration();
+  let mut anim_curvature = animation_curvature();
 
   let mut dev = Device::new(90.);
 
@@ -146,11 +147,13 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     //camera = anim_cam.at(t);
     let cmask = anim_color_mask.at(t);
     let caberration = anim_chromatic_aberration.at(t);
+    let acurvature = anim_curvature.at(t);
 
     // update the camera
-    lines_program.update(|&(_, ref view, _, _, ref jitter)| {
+    lines_program.update(|&(_, ref view, _, _, ref jitter, ref curvature)| {
       view.update(camera.transform);
       jitter.update(line_jitter * t.cos());
+      curvature.update(acurvature);
     });
     skybox_program.update(|&(ref proj, ref view, ref zfar)| {
       // trick to cancel camera moves (only orientation is important for the skybox)
@@ -335,27 +338,13 @@ fn animation_camera<'a>(w: u32, h: u32) -> anim::Cont<'a, f32, Entity<M44>> {
   })
 }
 
-fn animation_color_mask<'a>() -> anim::Cont<'a, f32, Color> {
-  let mut sampler = anim::Sampler::new();
-  let keys = anim::AnimParam::new(
-    vec![
-      anim::Key::new(0., Color::new(1., 1., 1.), anim::Interpolation::Linear),
-      anim::Key::new(2., Color::new(0., 0., 1.), anim::Interpolation::Cosine),
-      anim::Key::new(5., Color::new(1., 0.5, 0.5), anim::Interpolation::Hold),
-  ]);
+simple_animation!(animation_color_mask, Color, one(), [
+]);
 
-  anim::Cont::new(move |t| {
-    sampler.sample(t, &keys, true).unwrap_or(one())
-  })
-}
+simple_animation!(animation_chromatic_aberration, f32, 3., [
+]);
 
-fn animation_chromatic_aberration<'a>() -> anim::Cont<'a, f32, f32> {
-  let mut sampler = anim::Sampler::new();
-  let keys = anim::AnimParam::new(
-    vec![
-  ]);
-
-  anim::Cont::new(move |t| {
-    sampler.sample(t, &keys, true).unwrap_or(3.)
-  })
-}
+simple_animation!(animation_curvature, f32, 0., [
+  anim::Key::new(0., 0., anim::Interpolation::Cosine),
+  anim::Key::new(5., 1., anim::Interpolation::Cosine)
+]);

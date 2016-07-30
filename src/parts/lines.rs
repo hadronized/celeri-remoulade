@@ -17,7 +17,7 @@ impl Line {
   pub fn render_cmd<'a>(line: &'a Entity<Self>) -> RenderCommand<'a, LinesUniforms> {
     RenderCommand::new(None,
                        true,
-                       move |&(_, _, ref inst, ref color, _): &(_, _, UniformUpdate<Transform>, Uniform<[f32; 3]>, Uniform<f32>)| {
+                       move |&(_, _, ref inst, ref color, _, _): &(_, _, UniformUpdate<Transform>, Uniform<[f32; 3]>, Uniform<f32>, _)| {
                          inst.update(line.transform);
                          color.update(line.object.color);
                        },
