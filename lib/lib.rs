@@ -6,6 +6,7 @@ extern crate nalgebra;
 extern crate time;
 
 pub mod anim;
+pub mod color;
 pub mod device;
 pub mod entity;
 pub mod objects;

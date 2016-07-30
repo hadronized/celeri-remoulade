@@ -1,4 +1,5 @@
 use ion::anim;
+use ion::color::Color;
 use ion::device::Device;
 use ion::entity::*;
 use ion::objects::{new_cube, new_plane};
@@ -6,7 +7,7 @@ use ion::projection::perspective;
 use ion::window::{Action, Key, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
 use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot};
-use nalgebra::{Quaternion, Rotate};
+use nalgebra::{Quaternion, Rotate, one};
 use std::f32;
 use time;
 
@@ -42,7 +43,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   
   // gui elements
   let gui_const_color_program = new_gui_const_color_program().unwrap();
-  let time_panel = TimePanel::new([0., (h - 11) as f64], [w as f64, 10.], [0.25, 0.8, 0.25]);
+  let time_panel = TimePanel::new([0., (h - 10) as f64], [w as f64, 10.], [0.25, 0.8, 0.25]);
 
   let bloom_kernel: Vec<_> = (-21..22).map(|i| gaussian(0., 6., 0.8 * i as f32)).collect();
   let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();
@@ -78,6 +79,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
   // animation
   let mut anim_cam = animation_camera(w, h);
+  let mut anim_color_mask = animation_color_mask();
+  let mut anim_chromatic_aberration = animation_chromatic_aberration();
 
   let mut dev = Device::new(90.);
 
@@ -141,6 +144,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
     // TODO: comment that line to enable debug camera
     //camera = anim_cam.at(t);
+    let cmask = anim_color_mask.at(t);
+    let caberration = anim_chromatic_aberration.at(t);
 
     // update the camera
     lines_program.update(|&(_, ref view, _, _, ref jitter)| {
@@ -211,10 +216,11 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
       // apply the post-process shader and output directly into the back buffer
       &ShadingCommand::new(&lines_pp,
-                           |&(ref tex, ref ires, ref color_mask)| {
+                           |&(ref tex, ref ires, ref chromatic_aberration, ref color_mask)| {
                              tex.update(&pp_buffer.color_slot.texture);
                              ires.update([1. / w as f32, 1. / h as f32]);
-                             color_mask.update([1., 1., 1.]);
+                             chromatic_aberration.update(caberration);
+                             color_mask.update(*cmask.as_ref());
                            },
                            vec![
                              RenderCommand::new(None,
@@ -326,5 +332,30 @@ fn animation_camera<'a>(w: u32, h: u32) -> anim::Cont<'a, f32, Entity<M44>> {
     let scale = Scale::default();
 
     Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::new(pos, orient, scale))
+  })
+}
+
+fn animation_color_mask<'a>() -> anim::Cont<'a, f32, Color> {
+  let mut sampler = anim::Sampler::new();
+  let keys = anim::AnimParam::new(
+    vec![
+      anim::Key::new(0., Color::new(1., 1., 1.), anim::Interpolation::Linear),
+      anim::Key::new(2., Color::new(0., 0., 1.), anim::Interpolation::Cosine),
+      anim::Key::new(5., Color::new(1., 0.5, 0.5), anim::Interpolation::Hold),
+  ]);
+
+  anim::Cont::new(move |t| {
+    sampler.sample(t, &keys, true).unwrap_or(one())
+  })
+}
+
+fn animation_chromatic_aberration<'a>() -> anim::Cont<'a, f32, f32> {
+  let mut sampler = anim::Sampler::new();
+  let keys = anim::AnimParam::new(
+    vec![
+  ]);
+
+  anim::Cont::new(move |t| {
+    sampler.sample(t, &keys, true).unwrap_or(3.)
   })
 }
