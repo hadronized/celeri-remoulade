@@ -13,6 +13,7 @@ uniform float jitter;\n\
 void main() {\n\
   vec3 p = co;\n\
   p.xy *= jitter;\n\
+  p.y += pow(p.z * 0.1, 2.);\n\
   gl_Position = proj * view * inst * vec4(p, 1.);\n\
 }";
 
