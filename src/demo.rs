@@ -211,9 +211,10 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
       // apply the post-process shader and output directly into the back buffer
       &ShadingCommand::new(&lines_pp,
-                           |&(ref tex, ref ires)| {
+                           |&(ref tex, ref ires, ref color_mask)| {
                              tex.update(&pp_buffer.color_slot.texture);
                              ires.update([1. / w as f32, 1. / h as f32]);
+                             color_mask.update([1., 1., 1.]);
                            },
                            vec![
                              RenderCommand::new(None,
