@@ -294,15 +294,15 @@ impl<'a, T, A> Cont<'a, T, A> {
 
 #[macro_export]
 macro_rules! simple_animation {
-  ($name:ident, $t:ty, $def:expr, [ $($key:expr),* ]) => {
-    fn $name<'a>() -> anim::Cont<'a, f32, $t> {
-      let mut sampler = anim::Sampler::new();
-      let keys = anim::AnimParam::new(
+  ($name:ident, $t:ty, $def:expr, [ $( ($k:expr, $v:expr, $i:expr) ),* ]) => {
+    fn $name<'a>() -> Cont<'a, f32, $t> {
+      let mut sampler = Sampler::new();
+      let keys = AnimParam::new(
         vec![
-          $($key),*
+          $( Key::new($k, $v, $i) ),*
       ]);
 
-      anim::Cont::new(move |t| {
+      Cont::new(move |t| {
         sampler.sample(t, &keys, true).unwrap_or($def)
       })
     }

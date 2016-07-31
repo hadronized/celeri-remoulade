@@ -1,10 +1,10 @@
-use ion::anim;
+use ion::anim::{AnimParam, Cont, Interpolation, Key, Sampler};
 use ion::color::Color;
 use ion::device::Device;
 use ion::entity::*;
 use ion::objects::{new_cube, new_plane};
 use ion::projection::perspective;
-use ion::window::{Action, Key, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
+use ion::window::{self, Action, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
 use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot};
 use nalgebra::{Quaternion, Rotate, one};
@@ -134,7 +134,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
     while let Ok((key, action)) = kbd.try_recv() {
       if action == Action::Release {
-        if key == Key::Escape {
+        if key == window::Key::Escape {
           return false;
         }
       } else {
@@ -262,36 +262,36 @@ fn handle_camera_cursor(camera: &mut Entity<M44>, left_down: bool, right_down: b
   }
 }
 
-fn handle_camera_keys(camera: &mut Entity<M44>, key: Key, t: f32) {
+fn handle_camera_keys(camera: &mut Entity<M44>, key: window::Key, t: f32) {
   match key {
-    Key::A => {
+    window::Key::A => {
       let left = camera.transform.orientation.inverse_rotate(&(X_AXIS * CAMERA_STRAFE_SENSITIVITY));
       camera.transform = camera.translate(left);
     },
-    Key::D => {
+    window::Key::D => {
       let right = camera.transform.orientation.inverse_rotate(&(X_AXIS * -CAMERA_STRAFE_SENSITIVITY));
       camera.transform = camera.translate(right);
     },
-    Key::W => {
+    window::Key::W => {
       let forward = camera.transform.orientation.inverse_rotate(&(Z_AXIS * CAMERA_FORWARD_SENSITIVITY));
       camera.transform = camera.translate(forward);
     },
-    Key::S => {
+    window::Key::S => {
       let backward = camera.transform.orientation.inverse_rotate(&(Z_AXIS * -CAMERA_FORWARD_SENSITIVITY));
       camera.transform = camera.translate(backward);
     },
-    Key::R => {
+    window::Key::R => {
       let upward = camera.transform.orientation.inverse_rotate(&(Y_AXIS * -CAMERA_UPWARD_SENSITIVITY));
       camera.transform = camera.translate(upward);
     },
-    Key::F => {
+    window::Key::F => {
       let downward = camera.transform.orientation.inverse_rotate(&(Y_AXIS * CAMERA_UPWARD_SENSITIVITY));
       camera.transform = camera.translate(downward);
     },
-    Key::C => { // print camera information on stdout (useful for animation keys)
+    window::Key::C => { // print camera information on stdout (useful for animation keys)
       let p = camera.transform.translation;
       let q = camera.transform.orientation.quaternion();
-      info!("position: anim::Key::new({}, Position::new({}, {}, {})),", t, p[0], p[1], p[2]);
+      info!("position: anim::window::Key::new({}, Position::new({}, {}, {})),", t, p[0], p[1], p[2]);
       info!("orientation: anim::Key::new({}, Orientation::new_with_quaternion(Quaternion::new({}, {}, {}, {}))),", t, q[0], q[1], q[2], q[3]);
       info!("");
     },
@@ -299,37 +299,37 @@ fn handle_camera_keys(camera: &mut Entity<M44>, key: Key, t: f32) {
   }
 }
 
-fn handle_device_keys(dev: &mut Device, key: Key) {
+fn handle_device_keys(dev: &mut Device, key: window::Key) {
   match key {
-    Key::Space => {
+    window::Key::Space => {
       dev.toggle();
     },
     _ => {}
   }
 }
 
-fn animation_camera<'a>(w: u32, h: u32) -> anim::Cont<'a, f32, Entity<M44>> {
+fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, f32, Entity<M44>> {
   // position keys
-  let mut pos_sampler = anim::Sampler::new();
-  let pos_keys = anim::AnimParam::new(
+  let mut pos_sampler = Sampler::new();
+  let pos_keys = AnimParam::new(
     vec![
-      anim::Key::new(0., Position::new(0., 0., 0.), anim::Interpolation::Cosine),
-      anim::Key::new(3., Position::new(-2.4647493, -0.3964165, -6.503414), anim::Interpolation::Cosine),
-      anim::Key::new(6., Position::new(-3.0137098, -1.5013391, -14.876995), anim::Interpolation::Cosine),
-      anim::Key::new(10., Position::new(-2.5427933, -0.7344483, -14.866661), anim::Interpolation::Hold)
+      Key::new(0., Position::new(0., 0., 0.), Interpolation::Cosine),
+      Key::new(3., Position::new(-2.4647493, -0.3964165, -6.503414), Interpolation::Cosine),
+      Key::new(6., Position::new(-3.0137098, -1.5013391, -14.876995), Interpolation::Cosine),
+      Key::new(10., Position::new(-2.5427933, -0.7344483, -14.866661), Interpolation::Hold)
   ]);
 
   // orientation keys
-  let mut orient_sampler = anim::Sampler::new();
-  let orient_keys = anim::AnimParam::new(
+  let mut orient_sampler = Sampler::new();
+  let orient_keys = AnimParam::new(
     vec![
-      anim::Key::new(0., Orientation::new_with_quaternion(Quaternion::new(0.8946971, -0.4456822, -0.029346175, -0.004680205)), anim::Interpolation::Cosine),
-      anim::Key::new(3., Orientation::new_with_quaternion(Quaternion::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), anim::Interpolation::Cosine),
-      anim::Key::new(6., Orientation::new_with_quaternion(Quaternion::new(0.97801495, 0.07943316, 0.17186677, 0.08734873)), anim::Interpolation::Cosine),
-      anim::Key::new(10., Orientation::new_with_quaternion(Quaternion::new(0.8595459, 0.10456929, -0.28957868, -0.4078911)), anim::Interpolation::Hold)
+      Key::new(0., Orientation::new_with_quaternion(Quaternion::new(0.8946971, -0.4456822, -0.029346175, -0.004680205)), Interpolation::Cosine),
+      Key::new(3., Orientation::new_with_quaternion(Quaternion::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), Interpolation::Cosine),
+      Key::new(6., Orientation::new_with_quaternion(Quaternion::new(0.97801495, 0.07943316, 0.17186677, 0.08734873)), Interpolation::Cosine),
+      Key::new(10., Orientation::new_with_quaternion(Quaternion::new(0.8595459, 0.10456929, -0.28957868, -0.4078911)), Interpolation::Hold)
   ]);
 
-  anim::Cont::new(move |t| {
+  Cont::new(move |t| {
     let pos = pos_sampler.sample(t, &pos_keys, true).unwrap_or(Position::new(0., 0., 0.)); // FIXME: release
     let orient = orient_sampler.sample(t, &orient_keys, true).unwrap_or(Orientation::new(X_AXIS)); // FIXME: release
     let scale = Scale::default();
@@ -345,6 +345,6 @@ simple_animation!(animation_chromatic_aberration, f32, 3., [
 ]);
 
 simple_animation!(animation_curvature, f32, 0., [
-  anim::Key::new(0., 0., anim::Interpolation::Cosine),
-  anim::Key::new(5., 1., anim::Interpolation::Cosine)
+  (0., 0., Interpolation::Cosine),
+  (5., 1., Interpolation::Cosine)
 ]);

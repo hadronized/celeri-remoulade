@@ -35,9 +35,9 @@ void main() {\n\
 
   // chromatic aberration\n\
   vec2 off = ires * pow(abs(length(v_screen_co)), 2.) * chromatic_aberration;\n\
-  color.r += texture(tex, v_co + sign(v_screen_co) * vec2(off.x, 0.)).r;\n\
-  color.g += texture(tex, v_co + sign(v_screen_co) * vec2(0., off.y)).g;\n\
-  color.b += texture(tex, v_co + sign(v_screen_co) * vec2(off.x, off.y)).b;\n\
+  color.r += texture(tex, v_co + vec2(off.x, 0.)).r;\n\
+  color.g += texture(tex, v_co + vec2(0., off.y)).g;\n\
+  color.b += texture(tex, v_co + vec2(off.x, off.y)).b;\n\
 
   // vignette\n\
   color *= mix(1., .5, pow(length(v_screen_co), 2.));\n\
