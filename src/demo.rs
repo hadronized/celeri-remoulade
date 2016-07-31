@@ -144,7 +144,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     }
 
     // TODO: comment that line to enable debug camera
-    //camera = anim_cam.at(t);
+    camera = anim_cam.at(t);
     let cmask = anim_color_mask.at(t);
     let caberration = anim_chromatic_aberration.at(t);
     let acurvature = anim_curvature.at(t);
@@ -345,6 +345,4 @@ simple_animation!(animation_chromatic_aberration, f32, 3., [
 ]);
 
 simple_animation!(animation_curvature, f32, 0., [
-  (0., 0., Interpolation::Cosine),
-  (5., 1., Interpolation::Cosine)
 ]);

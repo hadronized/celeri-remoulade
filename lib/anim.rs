@@ -31,7 +31,9 @@ pub enum Interpolation {
   /// Linear interpolation between a `Key` and the next one.
   Linear,
   /// Cosine interpolation between a `Key` and the next one.
-  Cosine
+  Cosine,
+  /// Catmull-Rom interpolation.
+  CatmullRom
 }
 
 #[derive(Debug)]
@@ -84,7 +86,7 @@ pub trait Interpolate: Copy {
   fn lerp(a: Self, b: Self, t: Time) -> Self;
   /// Cubic hermite interpolation.
   fn cubic_hermite(x: (Self, Time), a: (Self, Time), b: (Self, Time), y: (Self, Time), t: Time) -> Self {
-    a.0
+    Self::lerp(a.0, b.0, t)
   }
 }
 
@@ -192,7 +194,8 @@ impl Sampler {
         let cos_nt = (1. - f32::cos(nt * consts::PI)) * 0.5;
 
         Interpolate::lerp(cp.value, cp1.value, cos_nt)
-      }
+      },
+      Interpolation::Cubic
     })
   }
 }
