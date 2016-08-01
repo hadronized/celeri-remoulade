@@ -3,7 +3,7 @@ use ion::entity::Entity;
 use ion::transform::{Position, Transform};
 use luminance::{Mode, UniformUpdate};
 use luminance_gl::gl33::{RenderCommand, Tessellation, Uniform};
-use procedural::{color_palette, lerp_color, noise2};
+use procedural::{lerp_color, noise2};
 
 use shaders::lines::LinesUniforms;
 

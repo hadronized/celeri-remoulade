@@ -9,7 +9,6 @@ use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot};
 use nalgebra::{Quaternion, Rotate, one};
 use std::f32;
-use time;
 
 use gui::TimePanel;
 use procedural::gaussian;
@@ -19,7 +18,6 @@ use parts::lines::*;
 
 // shaders
 use shaders::blur::*;
-use shaders::chromatic_aberration::*;
 use shaders::gui_const_color::*;
 use shaders::lines::*;
 use shaders::lines_pp::*;
@@ -38,7 +36,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let back_buffer = Framebuffer::default((w, h));
   let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
-  let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let pp_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   
   // gui elements
@@ -48,7 +45,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let bloom_kernel: Vec<_> = (-21..22).map(|i| gaussian(0., 6., 0.8 * i as f32)).collect();
   let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();
   let vblur_program = new_blur_program(&bloom_kernel, false).unwrap();
-  let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
   let lines_pp = new_lines_pp().unwrap();
   let lines_program = new_lines_program().unwrap();
 
@@ -88,8 +84,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   Ok(Box::new(move || {
     dev.recompute_playback_cursor();
     let t = dev.playback_cursor();
-
-    let start_time = time::precise_time_ns();
 
     // FIXME: debug; use to alter the line jitter
     while let Ok(scroll) = scroll.try_recv() {
@@ -242,9 +236,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            ])
     ]).run();
 
-    let end_time = time::precise_time_ns();
-    //deb!("fps: {}", 1e9 / ((end_time - start_time) as f32));
-
     true
   }))
 }
@@ -313,10 +304,10 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, f32, Entity<M44>> {
   let mut pos_sampler = Sampler::new();
   let pos_keys = AnimParam::new(
     vec![
-      Key::new(0., Position::new(0., 0., 0.), Interpolation::Cosine),
-      Key::new(3., Position::new(-2.4647493, -0.3964165, -6.503414), Interpolation::Cosine),
-      Key::new(6., Position::new(-3.0137098, -1.5013391, -14.876995), Interpolation::Cosine),
-      Key::new(10., Position::new(-2.5427933, -0.7344483, -14.866661), Interpolation::Hold)
+      Key::new(0., Position::new(0., 0., 0.), Interpolation::Linear),
+      Key::new(3., Position::new(-2.4647493, -0.3964165, -6.503414), Interpolation::CatmullRom),
+      Key::new(6., Position::new(-3.0137098, -1.5013391, -14.876995), Interpolation::Hold),
+      Key::new(30., Position::new(-3.0137098, -1.5013391, -14.876995), Interpolation::Linear),
   ]);
 
   // orientation keys
@@ -324,9 +315,10 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, f32, Entity<M44>> {
   let orient_keys = AnimParam::new(
     vec![
       Key::new(0., Orientation::new_with_quaternion(Quaternion::new(0.8946971, -0.4456822, -0.029346175, -0.004680205)), Interpolation::Cosine),
-      Key::new(3., Orientation::new_with_quaternion(Quaternion::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), Interpolation::Cosine),
-      Key::new(6., Orientation::new_with_quaternion(Quaternion::new(0.97801495, 0.07943316, 0.17186677, 0.08734873)), Interpolation::Cosine),
-      Key::new(10., Orientation::new_with_quaternion(Quaternion::new(0.8595459, 0.10456929, -0.28957868, -0.4078911)), Interpolation::Hold)
+      Key::new(3., Orientation::new_with_quaternion(Quaternion::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), Interpolation::Hold),
+      Key::new(30., Orientation::new_with_quaternion(Quaternion::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), Interpolation::Cosine),
+      //Key::new(6., Orientation::new_with_quaternion(Quaternion::new(0.97801495, 0.07943316, 0.17186677, 0.08734873)), Interpolation::Cosine),
+      //Key::new(10., Orientation::new_with_quaternion(Quaternion::new(0.8595459, 0.10456929, -0.28957868, -0.4078911)), Interpolation::Hold)
   ]);
 
   Cont::new(move |t| {
