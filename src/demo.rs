@@ -313,9 +313,9 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, f32, Entity<M44>> {
   let mut pos_sampler = Sampler::new();
   let pos_keys = AnimParam::new(
     vec![
-      Key::new(0., Position::new(0., 0., 0.), Interpolation::Cosine),
-      Key::new(3., Position::new(-2.4647493, -0.3964165, -6.503414), Interpolation::Cosine),
-      Key::new(6., Position::new(-3.0137098, -1.5013391, -14.876995), Interpolation::Cosine),
+      Key::new(0., Position::new(0., 0., 0.), Interpolation::Hold),
+      Key::new(3., Position::new(-2.4647493, -0.3964165, -6.503414), Interpolation::CatmullRom),
+      Key::new(6., Position::new(-3.0137098, -1.5013391, -14.876995), Interpolation::Hold),
       Key::new(10., Position::new(-2.5427933, -0.7344483, -14.866661), Interpolation::Hold)
   ]);
 

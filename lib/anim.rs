@@ -1,5 +1,5 @@
 use std::f32::consts;
-use std::ops::{Add, Mul};
+use std::ops::{Add, Div, Mul, Sub};
 use nalgebra::{UnitQuaternion, Vector2, Vector3, Vector4};
 
 pub type Time = f32;
@@ -92,40 +92,41 @@ pub trait Interpolate: Copy {
 
 impl Interpolate for f32 {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
-    add_mul_lerp(a, b, t)
+    lerp(a, b, t)
   }
 
   fn cubic_hermite(x: (Self, Time), a: (Self, Time), b: (Self, Time), y: (Self, Time), t: Time) -> Self {
-    // time stuff
-    let t2 = t * t;
-    let t3 = t2 * t;
-    let two_t3 = 2. * t3;
-    let three_t2 = 3. * t2;
-
-    // tangents
-    let m0 = (b.0 - x.0) / (b.1 - x.1);
-		let m1 = (y.0 - a.0) / (y.1 - a.1);
-
-    a.0 * (two_t3 - three_t2 + 1.) + m0 * (t3 - 2. * t2 + t) + b.0 * (-two_t3 + three_t2) + m1 * (t3 - t2)
+    cubic_hermite(x, a, b, y, t)
   }
 }
 
 impl Interpolate for Vector2<f32> {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
-    add_mul_lerp(a, b, t)
+    lerp(a, b, t)
   }
 
+  fn cubic_hermite(x: (Self, Time), a: (Self, Time), b: (Self, Time), y: (Self, Time), t: Time) -> Self {
+    cubic_hermite(x, a, b, y, t)
+  }
 }
 
 impl Interpolate for Vector3<f32> {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
-    add_mul_lerp(a, b, t)
+    lerp(a, b, t)
+  }
+
+  fn cubic_hermite(x: (Self, Time), a: (Self, Time), b: (Self, Time), y: (Self, Time), t: Time) -> Self {
+    cubic_hermite(x, a, b, y, t)
   }
 }
 
 impl Interpolate for Vector4<f32> {
   fn lerp(a: Self, b: Self, t: Time) -> Self {
-    add_mul_lerp(a, b, t)
+    lerp(a, b, t)
+  }
+
+  fn cubic_hermite(x: (Self, Time), a: (Self, Time), b: (Self, Time), y: (Self, Time), t: Time) -> Self {
+    cubic_hermite(x, a, b, y, t)
   }
 }
 
@@ -135,9 +136,26 @@ impl Interpolate for UnitQuaternion<f32> {
   }
 }
 
-// Default implementation of Interpolate::lerp if the type is Add<Output=T> + Mul<Time, Output=T>.
-fn add_mul_lerp<T>(a: T, b: T, t: Time) -> T where T: Add<Output=T> + Mul<Time, Output=T> {
+// Default implementation of Interpolate::lerp.
+fn lerp<T>(a: T, b: T, t: Time) -> T where T: Add<Output = T> + Mul<Time, Output = T> {
   a * (1. - t) + b * t
+}
+
+// Default implementation of Interpolate::cubic_hermit.
+
+fn cubic_hermite<T>(x: (T, Time), a: (T, Time), b: (T, Time), y: (T, Time), t: Time) -> T
+    where T: Copy + Add<Output = T> + Sub<Output = T> + Mul<Time, Output = T> + Div<Time, Output = T> {
+  // time stuff
+  let t2 = t * t;
+  let t3 = t2 * t;
+  let two_t3 = 2. * t3;
+  let three_t2 = 3. * t2;
+
+  // tangents
+  let m0 = (b.0 - x.0) / (b.1 - x.1);
+	let m1 = (y.0 - a.0) / (y.1 - a.1);
+
+  a.0 * (two_t3 - three_t2 + 1.) + m0 * (t3 - 2. * t2 + t) + b.0 * (-two_t3 + three_t2) + m1 * (t3 - t2)
 }
 
 /// Samplers can sample `AnimParam` by providing a time. They should be mutable so that they can
@@ -178,24 +196,37 @@ impl Sampler {
       None => return None
     };
 
-    let cp = &param.control_points[i];
+    let cp0 = &param.control_points[i];
 
-    Some(match cp.interpolation {
-      Interpolation::Hold => cp.value,
+    Some(match cp0.interpolation {
+      Interpolation::Hold => cp0.value,
       Interpolation::Linear => {
         let cp1 = &param.control_points[i+1];
-        let nt = normalize_time(t, cp, cp1);
+        let nt = normalize_time(t, cp0, cp1);
 
-        Interpolate::lerp(cp.value, cp1.value, nt)
+        Interpolate::lerp(cp0.value, cp1.value, nt)
       },
       Interpolation::Cosine => {
         let cp1 = &param.control_points[i+1];
-        let nt = normalize_time(t, cp, cp1);
+        let nt = normalize_time(t, cp0, cp1);
         let cos_nt = (1. - f32::cos(nt * consts::PI)) * 0.5;
 
-        Interpolate::lerp(cp.value, cp1.value, cos_nt)
+        Interpolate::lerp(cp0.value, cp1.value, cos_nt)
       },
-      Interpolation::Cubic
+      Interpolation::CatmullRom => {
+        // We need at least four points for Catmull Rom; ensure we have them, otherwise, return
+        // None.
+        if i == 0 || i >= param.control_points.len() - 2 {
+          return None;
+        }
+
+        let cp1 = &param.control_points[i+1];
+        let cpm0 = &param.control_points[i-1];
+        let cpm1 = &param.control_points[i+2];
+        let nt = normalize_time(t, cp0, cp1);
+
+        Interpolate::cubic_hermite((cpm0.value, cpm0.t), (cp0.value, cp0.t), (cp1.value, cp1.t), (cpm1.value, cpm1.t), nt)
+      }
     })
   }
 }
