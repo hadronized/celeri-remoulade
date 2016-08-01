@@ -313,10 +313,10 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, f32, Entity<M44>> {
   let mut pos_sampler = Sampler::new();
   let pos_keys = AnimParam::new(
     vec![
-      Key::new(0., Position::new(0., 0., 0.), Interpolation::Hold),
+      Key::new(0., Position::new(0., 0., 0.), Interpolation::Linear),
       Key::new(3., Position::new(-2.4647493, -0.3964165, -6.503414), Interpolation::CatmullRom),
       Key::new(6., Position::new(-3.0137098, -1.5013391, -14.876995), Interpolation::Hold),
-      Key::new(10., Position::new(-2.5427933, -0.7344483, -14.866661), Interpolation::Hold)
+      Key::new(30., Position::new(-3.0137098, -1.5013391, -14.876995), Interpolation::Linear),
   ]);
 
   // orientation keys
@@ -324,9 +324,10 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, f32, Entity<M44>> {
   let orient_keys = AnimParam::new(
     vec![
       Key::new(0., Orientation::new_with_quaternion(Quaternion::new(0.8946971, -0.4456822, -0.029346175, -0.004680205)), Interpolation::Cosine),
-      Key::new(3., Orientation::new_with_quaternion(Quaternion::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), Interpolation::Cosine),
-      Key::new(6., Orientation::new_with_quaternion(Quaternion::new(0.97801495, 0.07943316, 0.17186677, 0.08734873)), Interpolation::Cosine),
-      Key::new(10., Orientation::new_with_quaternion(Quaternion::new(0.8595459, 0.10456929, -0.28957868, -0.4078911)), Interpolation::Hold)
+      Key::new(3., Orientation::new_with_quaternion(Quaternion::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), Interpolation::Hold),
+      Key::new(30., Orientation::new_with_quaternion(Quaternion::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), Interpolation::Cosine),
+      //Key::new(6., Orientation::new_with_quaternion(Quaternion::new(0.97801495, 0.07943316, 0.17186677, 0.08734873)), Interpolation::Cosine),
+      //Key::new(10., Orientation::new_with_quaternion(Quaternion::new(0.8595459, 0.10456929, -0.28957868, -0.4078911)), Interpolation::Hold)
   ]);
 
   Cont::new(move |t| {
