@@ -85,7 +85,7 @@ pub trait Interpolate: Copy {
   /// Linear interpolation.
   fn lerp(a: Self, b: Self, t: Time) -> Self;
   /// Cubic hermite interpolation.
-  fn cubic_hermite(x: (Self, Time), a: (Self, Time), b: (Self, Time), y: (Self, Time), t: Time) -> Self {
+  fn cubic_hermite(_: (Self, Time), a: (Self, Time), b: (Self, Time), _: (Self, Time), t: Time) -> Self {
     Self::lerp(a.0, b.0, t)
   }
 }
@@ -198,36 +198,36 @@ impl Sampler {
 
     let cp0 = &param.control_points[i];
 
-    Some(match cp0.interpolation {
-      Interpolation::Hold => cp0.value,
+    match cp0.interpolation {
+      Interpolation::Hold => Some(cp0.value),
       Interpolation::Linear => {
         let cp1 = &param.control_points[i+1];
         let nt = normalize_time(t, cp0, cp1);
 
-        Interpolate::lerp(cp0.value, cp1.value, nt)
+        Some(Interpolate::lerp(cp0.value, cp1.value, nt))
       },
       Interpolation::Cosine => {
         let cp1 = &param.control_points[i+1];
         let nt = normalize_time(t, cp0, cp1);
         let cos_nt = (1. - f32::cos(nt * consts::PI)) * 0.5;
 
-        Interpolate::lerp(cp0.value, cp1.value, cos_nt)
+        Some(Interpolate::lerp(cp0.value, cp1.value, cos_nt))
       },
       Interpolation::CatmullRom => {
         // We need at least four points for Catmull Rom; ensure we have them, otherwise, return
         // None.
         if i == 0 || i >= param.control_points.len() - 2 {
-          return None;
+          None
+        } else {
+          let cp1 = &param.control_points[i+1];
+          let cpm0 = &param.control_points[i-1];
+          let cpm1 = &param.control_points[i+2];
+          let nt = normalize_time(t, cp0, cp1);
+
+          Some(Interpolate::cubic_hermite((cpm0.value, cpm0.t), (cp0.value, cp0.t), (cp1.value, cp1.t), (cpm1.value, cpm1.t), nt))
         }
-
-        let cp1 = &param.control_points[i+1];
-        let cpm0 = &param.control_points[i-1];
-        let cpm1 = &param.control_points[i+2];
-        let nt = normalize_time(t, cp0, cp1);
-
-        Interpolate::cubic_hermite((cpm0.value, cpm0.t), (cp0.value, cp0.t), (cp1.value, cp1.t), (cpm1.value, cpm1.t), nt)
       }
-    })
+    }
   }
 }
 
