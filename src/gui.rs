@@ -57,6 +57,6 @@ impl TimePanel {
   }
 }
 
-pub fn cursor_distance(a: [f64; 2], b: [f64; 2]) -> f64 {
-  f64::sqrt((b[0] - a[0]).powf(2.) + (b[1] - a[1]).powf(2.))
-}
+//pub fn cursor_distance(a: [f64; 2], b: [f64; 2]) -> f64 {
+//  f64::sqrt((b[0] - a[0]).powf(2.) + (b[1] - a[1]).powf(2.))
+//}

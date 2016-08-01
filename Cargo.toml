@@ -19,7 +19,5 @@ luminance = "0.6.0"
 luminance-gl = "0.5.0"
 gl = "0.5.2"
 glfw = "0.3.0"
-#nalgebra = "0.8.2"
-nalgebra = { path = "../nalgebra" }
-# rustc-serialize = "0.3.18"
+nalgebra = { git = "https://github.com/phaazon/nalgebra.git", rev = "1fdd8979afa464d1a13d0bfe926e0d9aaab0ee1a" }
 time = "0.1.35"

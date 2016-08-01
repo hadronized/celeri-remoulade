@@ -1,5 +1,4 @@
-use ion::shader::{Program, ProgramError, Uniform, UniformUpdate, new_program};
-use ion::transform::Transform;
+use ion::shader::{Program, ProgramError, Uniform, new_program};
 
 const CONST_COLOR_VS: &'static str = "\
 layout (location = 0) in vec2 co;\n\

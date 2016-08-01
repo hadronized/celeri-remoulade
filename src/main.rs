@@ -3,7 +3,6 @@ extern crate ion;
 extern crate luminance;
 extern crate luminance_gl;
 extern crate nalgebra;
-extern crate time;
 
 use ion::window::with_window;
 use std::env;

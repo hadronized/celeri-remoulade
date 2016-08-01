@@ -1,6 +1,6 @@
 pub mod blur;
 //pub mod chess;
-pub mod chromatic_aberration;
+//pub mod chromatic_aberration;
 //pub mod const_color;
 //pub mod copy;
 pub mod gui_const_color;

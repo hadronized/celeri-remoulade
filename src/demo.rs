@@ -9,7 +9,6 @@ use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot};
 use nalgebra::{Quaternion, Rotate, one};
 use std::f32;
-use time;
 
 use gui::TimePanel;
 use procedural::gaussian;
@@ -19,7 +18,6 @@ use parts::lines::*;
 
 // shaders
 use shaders::blur::*;
-use shaders::chromatic_aberration::*;
 use shaders::gui_const_color::*;
 use shaders::lines::*;
 use shaders::lines_pp::*;
@@ -38,7 +36,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let back_buffer = Framebuffer::default((w, h));
   let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
-  let chromatic_aberration_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let pp_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   
   // gui elements
@@ -48,7 +45,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let bloom_kernel: Vec<_> = (-21..22).map(|i| gaussian(0., 6., 0.8 * i as f32)).collect();
   let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();
   let vblur_program = new_blur_program(&bloom_kernel, false).unwrap();
-  let chromatic_aberration_program = new_chromatic_aberration_program().unwrap();
   let lines_pp = new_lines_pp().unwrap();
   let lines_program = new_lines_program().unwrap();
 
@@ -88,8 +84,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   Ok(Box::new(move || {
     dev.recompute_playback_cursor();
     let t = dev.playback_cursor();
-
-    let start_time = time::precise_time_ns();
 
     // FIXME: debug; use to alter the line jitter
     while let Ok(scroll) = scroll.try_recv() {
@@ -241,9 +235,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                              time_panel.cursor_render_cmd(w as f32, h as f32, t / dev.playback_length())
                            ])
     ]).run();
-
-    let end_time = time::precise_time_ns();
-    //deb!("fps: {}", 1e9 / ((end_time - start_time) as f32));
 
     true
   }))
