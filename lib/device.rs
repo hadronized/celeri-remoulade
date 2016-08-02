@@ -10,12 +10,6 @@ use vorbis::Decoder;
 ///
 /// You shouldn’t have more than one Device per program.
 pub struct Device {
-  /// Monotonic epoch. Set when a device is created. Nanoseconds.
-  ///
-  /// That epoch is used to re-synchronize audio playback if it starts lagging behind. It’s also of a
-  /// good use when no audio playback is available – for instance when writting the first lines of
-  /// a demo.
-  epoch: u64,
   /// Length of the demo (seconds).
   length: f32,
   /// [debug] Whether it’s playing.
@@ -60,7 +54,6 @@ impl Device {
     println!("duration: {}", l);
 
     Device {
-      epoch: time::precise_time_ns(),
       length: l,
       playing: false,
       al_device: al_device,
@@ -73,29 +66,33 @@ impl Device {
   /// Recompute the playback cursor.
   pub fn recompute_playback_cursor(&mut self) {
     if self.playing {
-      let cursor = (time::precise_time_ns() - self.epoch) as f32 * NANOSECOND_TH;
-
-      self.al_source.set_sec_offset(cursor);
+      let cursor = self.playback_cursor();
 
       // loop the device if we hit the end of the demo
       if cursor > self.length {
-        self.epoch = time::precise_time_ns();
+        self.al_source.rewind();
       }
     }
   }
 
   /// Playback cursor in seconds.
   pub fn playback_cursor(&self) -> f32 {
-    self.al_source.get_sec_offset()
+    let cursor = self.al_source.get_sec_offset();
+
+    // loop the device if we hit the end of the demo
+    if cursor > self.length {
+      self.al_source.rewind();
+      0.
+    } else {
+      cursor
+    }
   }
 
   // FIXME: [debug]
   /// [debug] Move the cursor around. Expect the input to be normalized.
   pub fn set_cursor(&mut self, t: f32) {
     assert!(t >= 0. && t <= 1.);
-
-    self.epoch = time::precise_time_ns() - (self.length * t * 1e9) as u64;
-    self.al_source.set_sec_offset((time::precise_time_ns() - self.epoch) as f32 * NANOSECOND_TH);
+    self.al_source.set_sec_offset(t * self.length);
   }
 
   pub fn playback_length(&self) -> f32 {
@@ -105,7 +102,6 @@ impl Device {
   pub fn toggle(&mut self) {
     self.playing = !self.playing;
 
-    // resynchronize epoch
     if self.playing {
       // unpause the OpenAL source
       self.al_source.play();

@@ -84,7 +84,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut dev = Device::new(Path::new(TRACK_PATH));
 
   Ok(Box::new(move || {
-    dev.recompute_playback_cursor();
     let t = dev.playback_cursor();
 
     // FIXME: debug; use to alter the line jitter
