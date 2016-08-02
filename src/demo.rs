@@ -9,6 +9,7 @@ use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot};
 use nalgebra::{Quaternion, Rotate, one};
 use std::f32;
+use std::path::Path;
 
 use gui::TimePanel;
 use procedural::gaussian;
@@ -23,6 +24,7 @@ use shaders::lines::*;
 use shaders::lines_pp::*;
 use shaders::skybox::*;
 
+const TRACK_PATH: &'static str = "./track.ogg";
 const FOVY: f32 = f32::consts::FRAC_PI_4;
 const ZNEAR: f32 = 0.1;
 const ZFAR: f32 = 200.;
@@ -79,7 +81,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut anim_chromatic_aberration = animation_chromatic_aberration();
   let mut anim_curvature = animation_curvature();
 
-  let mut dev = Device::new(90.);
+  let mut dev = Device::new(Path::new(TRACK_PATH));
 
   Ok(Box::new(move || {
     dev.recompute_playback_cursor();
