@@ -4,7 +4,6 @@ extern crate luminance;
 extern crate luminance_gl;
 extern crate nalgebra;
 extern crate openal;
-extern crate time;
 extern crate vorbis;
 
 pub mod anim;

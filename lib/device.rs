@@ -2,7 +2,7 @@ use openal::al;
 use openal::alc;
 use std::fs::File;
 use std::path::Path;
-use time;
+use std::mem;
 use vorbis::Decoder;
 
 /// The device is responsible of managing synchronization and audio playback by providing a playback
@@ -23,8 +23,6 @@ pub struct Device {
   /// OpenAL source.
   al_source: al::Source
 }
-
-const NANOSECOND_TH: f32 = 1. / 1e9;
 
 impl Device {
   pub fn new(track_path: &Path) -> Self {
@@ -61,6 +59,14 @@ impl Device {
       al_buffer: al_buffer,
       al_source: al_source
     }
+  }
+
+  /// Destroy the `Device`.
+  fn destroy(self) {
+    self.al_buffer.delete();
+    self.al_source.delete();
+    self.al_ctx.destroy();
+    let _ = self.al_device.close();
   }
 
   /// Recompute the playback cursor.
