@@ -16,8 +16,8 @@ pub struct Device {
   /// good use when no audio playback is available – for instance when writting the first lines of
   /// a demo.
   epoch: u64,
-  /// Cached playback cursor.
-  cursor: f32,
+  /// Length of the demo (seconds).
+  length: f32,
   /// [debug] Whether it’s playing.
   playing: bool,
   /// OpenAL device.
@@ -55,9 +55,13 @@ impl Device {
     unsafe { al_buffer.buffer_data(al::Format::Stereo16, &pcm_buffer, 44100) };
     al_source.queue_buffer(&al_buffer);
 
+    // compute the length of soundtrack
+    let l = (al_buffer.get_size() * 8 / (al_buffer.get_channels() * al_buffer.get_bits())) as f32 / al_buffer.get_frequency() as f32;
+    println!("duration: {}", l);
+
     Device {
       epoch: time::precise_time_ns(),
-      cursor: 0.,
+      length: l,
       playing: false,
       al_device: al_device,
       al_ctx: al_ctx,
@@ -69,10 +73,12 @@ impl Device {
   /// Recompute the playback cursor.
   pub fn recompute_playback_cursor(&mut self) {
     if self.playing {
-      self.cursor = (time::precise_time_ns() - self.epoch) as f32 * NANOSECOND_TH;
+      let cursor = (time::precise_time_ns() - self.epoch) as f32 * NANOSECOND_TH;
+
+      self.al_source.set_sec_offset(cursor);
 
       // loop the device if we hit the end of the demo
-      if self.cursor > self.playback_length() {
+      if cursor > self.length {
         self.epoch = time::precise_time_ns();
       }
     }
@@ -80,7 +86,7 @@ impl Device {
 
   /// Playback cursor in seconds.
   pub fn playback_cursor(&self) -> f32 {
-    self.cursor
+    self.al_source.get_sec_offset()
   }
 
   // FIXME: [debug]
@@ -88,13 +94,12 @@ impl Device {
   pub fn set_cursor(&mut self, t: f32) {
     assert!(t >= 0. && t <= 1.);
 
-    self.epoch = time::precise_time_ns() - (self.playback_length() * t * 1e9) as u64;
-    self.cursor = (time::precise_time_ns() - self.epoch) as f32 * NANOSECOND_TH;
+    self.epoch = time::precise_time_ns() - (self.length * t * 1e9) as u64;
+    self.al_source.set_sec_offset((time::precise_time_ns() - self.epoch) as f32 * NANOSECOND_TH);
   }
 
-  // TODO
   pub fn playback_length(&self) -> f32 {
-    90.
+    self.length
   }
 
   pub fn toggle(&mut self) {
@@ -104,9 +109,6 @@ impl Device {
     if self.playing {
       // unpause the OpenAL source
       self.al_source.play();
-
-      let c = self.cursor / self.playback_length();
-      self.set_cursor(c);
     } else {
       // pause the OpenAL source
       self.al_source.pause();
