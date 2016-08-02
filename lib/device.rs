@@ -102,8 +102,14 @@ impl Device {
 
     // resynchronize epoch
     if self.playing {
+      // unpause the OpenAL source
+      self.al_source.play();
+
       let c = self.cursor / self.playback_length();
       self.set_cursor(c);
+    } else {
+      // pause the OpenAL source
+      self.al_source.pause();
     }
   }
 
