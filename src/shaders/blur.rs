@@ -23,11 +23,7 @@ pub type BlurProgram<'a> = Program<BlurUniforms<'a>>;
 pub type BlurUniforms<'a> = (Uniform<&'a Texture<Flat, Dim2, RGBA32F>>, Uniform<[f32; 2]>);
 
 pub fn new_blur_program<'a>(kernel: &[f32], horiz: bool) -> Result<BlurProgram<'a>, ProgramError> {
-  let src = new_blur_fs(kernel, horiz);
-
-  deb!("{}", src);
-
-  new_program(None, BLUR_VS, None, &src, |proxy| {
+  new_program(None, BLUR_VS, None, &new_blur_fs(kernel, horiz), |proxy| {
     let tex = try!(proxy.uniform("tex"));
     let ires = try!(proxy.uniform("ires"));
 
