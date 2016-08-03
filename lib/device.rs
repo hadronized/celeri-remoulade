@@ -58,14 +58,6 @@ impl Device {
     }
   }
 
-  /// Destroy the `Device`.
-  fn destroy(self) {
-    self.al_buffer.delete();
-    self.al_source.delete();
-    self.al_ctx.destroy();
-    let _ = self.al_device.close();
-  }
-
   /// Playback cursor in seconds.
   pub fn playback_cursor(&self) -> f32 {
     let cursor = self.al_source.get_sec_offset();
@@ -98,5 +90,16 @@ impl Device {
       // unpause the OpenAL source
       self.al_source.play();
     }
+  }
+}
+
+impl Drop for Device {
+  fn drop(&mut self) {
+    drop(&mut self.al_buffer);
+    drop(&mut self.al_source);
+    drop(&mut self.al_ctx);
+
+    let dummy = unsafe { mem::uninitialized() };
+    let _ = mem::replace(&mut self.al_device, dummy).close();
   }
 }
