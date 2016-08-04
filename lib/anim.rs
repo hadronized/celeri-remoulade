@@ -42,7 +42,9 @@ pub struct AnimParam<T> {
 }
 
 impl<T> AnimParam<T> {
-  pub fn new(cps: Vec<Key<T>>) -> Self {
+  pub fn new(mut cps: Vec<Key<T>>) -> Self {
+    cps.sort_by(|k0, k1| k0.t.partial_cmp(&k1.t).unwrap());
+
     AnimParam {
       control_points: cps
     }
@@ -341,89 +343,4 @@ macro_rules! simple_animation {
       })
     }
   }
-}
-
-#[test]
-fn test_binary_search_lower_cp0() {
-  let cps = Vec::<Key<f32>>::new();
-
-  assert_eq!(binary_search_lower_cp(&cps, 0.), None);
-  assert_eq!(binary_search_lower_cp(&cps, 2.), None);
-  assert_eq!(binary_search_lower_cp(&cps, 3.), None);
-  assert_eq!(binary_search_lower_cp(&cps, 3907493.), None);
-  assert_eq!(binary_search_lower_cp(&cps, -304.), None);
-}
-
-#[test]
-fn test_binary_search_lower_cp1() {
-  let cps = vec![
-    Key::new(0., 10., Interpolation::Hold),
-    Key::new(24., 100., Interpolation::Hold),
-    Key::new(45., -3.34, Interpolation::Hold)
-  ];
-
-  assert_eq!(binary_search_lower_cp(&cps, 0.), Some(0));
-  assert_eq!(binary_search_lower_cp(&cps, 1.), Some(0));
-  assert_eq!(binary_search_lower_cp(&cps, 2.), Some(0));
-  assert_eq!(binary_search_lower_cp(&cps, 10.), Some(0));
-  assert_eq!(binary_search_lower_cp(&cps, 20.), Some(0));
-  assert_eq!(binary_search_lower_cp(&cps, 23.9999), Some(0));
-  assert_eq!(binary_search_lower_cp(&cps, 24.), Some(1));
-  assert_eq!(binary_search_lower_cp(&cps, 25.), Some(1));
-  assert_eq!(binary_search_lower_cp(&cps, 45.), None);
-  assert_eq!(binary_search_lower_cp(&cps, 938445.), None);
-  assert_eq!(binary_search_lower_cp(&cps, -938445.), None);
-}
-
-#[test]
-fn test_around_search_lower_cp0() {
-  let cps = Vec::<Key<f32>>::new();
-
-  assert_eq!(around_search_lower_cp(&cps, 0, 0.), None);
-}
-
-#[test]
-fn test_around_search_lower_cp1() {
-  let cps = vec![
-    Key::new(0., 10., Interpolation::Hold),
-    Key::new(24., 100., Interpolation::Hold),
-    Key::new(45., -3.34, Interpolation::Hold)
-  ];
-
-  assert_eq!(around_search_lower_cp(&cps, 0, 20.), Some(0));
-  assert_eq!(around_search_lower_cp(&cps, 1, 20.), Some(0));
-  assert_eq!(around_search_lower_cp(&cps, 1, 0.), Some(0));
-  assert_eq!(around_search_lower_cp(&cps, 1, 24.), Some(1));
-}
-
-#[test]
-fn test_sampler_hold() {
-  let mut sampler = Sampler::new();
-  let p = AnimParam::new(vec![
-    Key::new(0., 10., Interpolation::Hold),
-    Key::new(24.,  100., Interpolation::Hold),
-    Key::new(45.,  -3.34, Interpolation::Hold)
-  ]);
-
-  assert_eq!(sampler.sample(0., &p, true), Some(10.));
-  assert_eq!(sampler.sample(2., &p, true), Some(10.));
-  assert_eq!(sampler.sample(23., &p, true), Some(10.));
-  assert_eq!(sampler.sample(44., &p, true), Some(100.));
-  assert_eq!(sampler.sample(44., &p, false), Some(100.));
-  assert_eq!(sampler.sample(45., &p, true), None);
-  assert_eq!(sampler.sample(45347., &p, false), None);
-  assert_eq!(sampler.sample(45347., &p, true), None);
-}
-
-#[test]
-fn test_sampler_linear() {
-  let mut sampler = Sampler::new();
-  let p = AnimParam::new(vec![
-    Key::new(0., 10., Interpolation::Linear),
-    Key::new(10., 20., Interpolation::Linear)
-  ]);
-
-  assert_eq!(sampler.sample(0., &p, true), Some(10.));
-  assert_eq!(sampler.sample(10., &p, true), None);
-  assert_eq!(sampler.sample(5., &p, true), Some(15.));
 }
