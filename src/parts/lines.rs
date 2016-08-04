@@ -45,7 +45,7 @@ impl Lines {
                        |_| {},
                        &self.0,
                        1,
-                       Some(1.8))
+                       Some(2.))
   }
 }
 
@@ -55,7 +55,7 @@ pub fn new_line(points: &Vec<Position>, seed: f32) -> Line {
   let color = lerp_color(&salmon, &golden, (seed * 100. * noise2(seed * 93743.3974, -34.)).cos().abs());
   let line = Line {
     points: points.clone(),
-    offset: seed * 80.,
+    offset: seed * 30.,
     color: color,
   };
 

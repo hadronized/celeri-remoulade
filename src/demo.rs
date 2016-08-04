@@ -60,8 +60,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     let mut lines = Vec::<Line>::with_capacity(400);
 
     for i in 0..lines.capacity() {
-      let seed = i as f32 / lines.capacity() as f32;
-      lines.push(new_line(&new_line_points(200, 2000, 0.5, 0.1, seed * 394934.936493), seed));
+      let seed = i as f32 / 1000.;
+      lines.push(new_line(&new_line_points(100, 1000, 1., 0.1, seed), seed));
     }
 
     Lines::new(&lines)
