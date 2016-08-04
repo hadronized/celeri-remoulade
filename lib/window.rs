@@ -39,7 +39,7 @@ pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove, Scroll) -> Res
   window.set_cursor_pos_polling(true);
   window.set_mouse_button_polling(true);
   window.set_scroll_polling(true);
-  //glfw.set_swap_interval(0); // TODO: uncomment to unleash the FPS! \o
+  glfw.set_swap_interval(0); // TODO: uncomment to unleash the FPS! \o
 
   // init OpenGL
   gl::load_with(|s| window.get_proc_address(s) as *const c_void);

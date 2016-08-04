@@ -66,6 +66,8 @@ pub fn new_line(points: &Vec<Position>, seed: f32) -> Line {
 pub fn new_line_points(points_in: usize, points_out: usize, gap: f32, smooth: f32, seed: f32) -> Vec<Position> {
   assert!(points_in <= points_out && points_in > 1);
 
+  let seed = seed + 1.;
+
   // create control points
   let mut a_cps = Vec::with_capacity(points_in);
   let mut b_cps = Vec::with_capacity(points_in);

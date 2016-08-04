@@ -10,6 +10,7 @@ use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, S
 use nalgebra::{Quaternion, Rotate, one};
 use std::f32;
 use std::path::Path;
+use time;
 
 use gui::ProgressBar;
 use procedural::gaussian;
@@ -60,7 +61,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
     for i in 0..lines.capacity() {
       let seed = i as f32 / lines.capacity() as f32;
-      lines.push(new_line(&new_line_points(200, 2000, 0.5, 0.1, seed), seed));
+      lines.push(new_line(&new_line_points(200, 2000, 0.5, 0.1, seed * 394934.936493), seed));
     }
 
     Lines::new(&lines)
@@ -84,6 +85,8 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
   Ok(Box::new(move || {
     let t = dev.playback_cursor();
+
+    let start_time = time::precise_time_s();
 
     // FIXME: debug; use to alter the line jitter
     while let Ok(scroll) = scroll.try_recv() {
@@ -236,6 +239,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                              time_panel.cursor_render_cmd(w as f32, h as f32, t / dev.playback_length())
                            ])
     ]).run();
+
+    let end_time = time::precise_time_s();
+    deb!("fps: {}", (end_time - start_time).recip());
 
     true
   }))
