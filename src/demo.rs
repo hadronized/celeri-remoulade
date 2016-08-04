@@ -11,7 +11,7 @@ use nalgebra::{Quaternion, Rotate, one};
 use std::f32;
 use std::path::Path;
 
-use gui::TimePanel;
+use gui::ProgressBar;
 use procedural::gaussian;
 
 // parts
@@ -42,7 +42,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   
   // gui elements
   let gui_const_color_program = new_gui_const_color_program().unwrap();
-  let time_panel = TimePanel::new([0., (h - 10) as f64], [w as f64, 10.], [0.25, 0.8, 0.25]);
+  let time_panel = ProgressBar::new([0., (h - 10) as f64], [w as f64, 10.], [0.25, 0.8, 0.25]);
 
   let bloom_kernel: Vec<_> = (-21..22).map(|i| gaussian(0., 6., 0.8 * i as f32)).collect();
   let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();

@@ -2,16 +2,17 @@ use ion::objects::new_plane;
 use luminance_gl::gl33::{RenderCommand, Tessellation, Uniform};
 use shaders::gui_const_color::GUIConstColorUniforms;
 
-pub struct TimePanel {
+/// A panel used to represent a progress bar.
+pub struct ProgressBar {
   color: [f32; 3],
   rect: Tessellation,
   position: [f64; 2],
   dimension: [f64; 2]
 }
 
-impl TimePanel {
+impl ProgressBar {
   pub fn new(position: [f64; 2], dimension: [f64; 2], color: [f32; 3]) -> Self {
-    TimePanel {
+    ProgressBar {
       color: color,
       rect: new_plane(),
       position: position,
