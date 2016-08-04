@@ -7,8 +7,9 @@ use procedural::{lerp_color, noise2};
 use shaders::lines::LinesUniforms;
 
 pub struct Line {
-  pub points: Vec<Position>,
-  pub color: [f32; 3]
+  points: Vec<Position>,
+  offset: f32,
+  color: [f32; 3]
 }
 
 pub struct Lines(Tessellation);
@@ -22,10 +23,10 @@ impl Lines {
     for line in lines {
       // accumulate vertices
       let first_vertex = line.points[0];
-      vertices.push(([first_vertex.x, first_vertex.y, first_vertex.z], line.color));
+      vertices.push(([first_vertex.x, first_vertex.y, first_vertex.z, line.offset], line.color));
 
       for point in &line.points[1..] {
-        vertices.push(([point.x, point.y, point.z], line.color));
+        vertices.push(([point.x, point.y, point.z, line.offset], line.color));
 
         // accumulate indices
         indices.extend(vec![i, i+1]);
@@ -44,16 +45,17 @@ impl Lines {
                        |_| {},
                        &self.0,
                        1,
-                       None)
+                       Some(1.8))
   }
 }
 
-pub fn new_line(points: &Vec<Position>, seed: f32, x_offset: f32, z_offset: f32) -> Line {
+pub fn new_line(points: &Vec<Position>, seed: f32) -> Line {
   let salmon = [0.859, 0.188, 0.224];
   let golden = [1., 0.6, 0.0515];
   let color = lerp_color(&salmon, &golden, (seed * 100. * noise2(seed * 93743.3974, -34.)).cos().abs());
   let line = Line {
-    points: points.iter().map(|p| *p + Position::new(x_offset, 0., z_offset)).collect(),
+    points: points.clone(),
+    offset: seed * 80.,
     color: color,
   };
 

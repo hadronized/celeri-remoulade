@@ -3,7 +3,7 @@ use ion::shader::{Program, ProgramError, Uniform, UniformUpdate, new_program};
 use ion::transform::Transform;
 
 const VS: &'static str = "\
-layout (location = 0) in vec3 co;\n\
+layout (location = 0) in vec4 co; // .w is for the offset\n\
 layout (location = 1) in vec3 color;\n\
 \n
 out vec3 v_color;\n\
@@ -14,9 +14,10 @@ uniform float jitter;\n\
 uniform float curvature;\n\
 \n\
 void main() {\n\
-  vec3 p = co;\n\
+  vec3 p = co.xyz;\n\
   p.xy *= jitter;\n\
   p.y += pow(p.z * 0.1, 2.) * curvature;\n\
+  p.x += co.w;\n\
   gl_Position = proj * view * vec4(p, 1.);\n\
   v_color = color;\n\
 }";

@@ -56,11 +56,11 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
   let plane = Entity::new(new_plane(), Transform::default().reorient(X_AXIS, -f32::consts::FRAC_PI_2).rescale(Scale::uni(10.)));
   let lines = {
-    let mut lines = Vec::<Line>::with_capacity(4000);
+    let mut lines = Vec::<Line>::with_capacity(400);
 
     for i in 0..lines.capacity() {
-      let seed = i as f32 / 1000.;
-      lines.push(new_line(&new_line_points(100, 1000, 1., 0.2 + seed.sin().abs() * 0.1, seed), seed, -2.5, -5.));
+      let seed = i as f32 / lines.capacity() as f32;
+      lines.push(new_line(&new_line_points(200, 2000, 0.5, 0.1, seed), seed));
     }
 
     Lines::new(&lines)
