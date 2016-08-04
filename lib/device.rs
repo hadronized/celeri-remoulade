@@ -12,8 +12,6 @@ use vorbis::Decoder;
 pub struct Device {
   /// Length of the demo (seconds).
   length: f32,
-  /// [debug] Whether it’s playing.
-  playing: bool,
   /// OpenAL device.
   al_device: alc::Device,
   /// OpenAL context.
@@ -53,31 +51,10 @@ impl Device {
 
     Device {
       length: l,
-      playing: false,
       al_device: al_device,
       al_ctx: al_ctx,
       al_buffer: al_buffer,
       al_source: al_source
-    }
-  }
-
-  /// Destroy the `Device`.
-  fn destroy(self) {
-    self.al_buffer.delete();
-    self.al_source.delete();
-    self.al_ctx.destroy();
-    let _ = self.al_device.close();
-  }
-
-  /// Recompute the playback cursor.
-  pub fn recompute_playback_cursor(&mut self) {
-    if self.playing {
-      let cursor = self.playback_cursor();
-
-      // loop the device if we hit the end of the demo
-      if cursor > self.length {
-        self.al_source.rewind();
-      }
     }
   }
 
@@ -106,18 +83,23 @@ impl Device {
   }
 
   pub fn toggle(&mut self) {
-    self.playing = !self.playing;
-
-    if self.playing {
-      // unpause the OpenAL source
-      self.al_source.play();
-    } else {
+    if self.al_source.is_playing() {
       // pause the OpenAL source
       self.al_source.pause();
+    } else {
+      // unpause the OpenAL source
+      self.al_source.play();
     }
   }
+}
 
-  pub fn is_playing(&self) -> bool {
-    self.playing
+impl Drop for Device {
+  fn drop(&mut self) {
+    drop(&mut self.al_buffer);
+    drop(&mut self.al_source);
+    drop(&mut self.al_ctx);
+
+    let dummy = unsafe { mem::uninitialized() };
+    let _ = mem::replace(&mut self.al_device, dummy).close();
   }
 }
