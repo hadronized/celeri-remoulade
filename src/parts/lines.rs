@@ -1,5 +1,4 @@
 use ion::anim::{AnimParam, Key, Interpolation, Sampler};
-use ion::entity::Entity;
 use ion::transform::{Position, Transform};
 use luminance::{Mode, UniformUpdate};
 use luminance_gl::gl33::{RenderCommand, Tessellation, Uniform};
@@ -8,41 +7,61 @@ use procedural::{lerp_color, noise2};
 use shaders::lines::LinesUniforms;
 
 pub struct Line {
-  pub tessellation: Tessellation,
-  pub color: [f32; 3],
-  pub size: f32
+  pub points: Vec<Position>,
+  pub color: [f32; 3]
 }
 
-impl Line {
-  pub fn render_cmd<'a>(line: &'a Entity<Self>) -> RenderCommand<'a, LinesUniforms> {
+pub struct Lines(Tessellation);
+
+impl Lines {
+  pub fn new(lines: &[Line]) -> Self {
+    let mut vertices = Vec::new();
+    let mut indices = Vec::new();
+    let mut i = 0;
+
+    for line in lines {
+      // accumulate vertices
+      let first_vertex = line.points[0];
+      vertices.push(([first_vertex.x, first_vertex.y, first_vertex.z], line.color));
+
+      for point in &line.points[1..] {
+        vertices.push(([point.x, point.y, point.z], line.color));
+
+        // accumulate indices
+        indices.extend(vec![i, i+1]);
+        i += 1;
+      }
+
+      i += 1;
+    }
+
+    Lines(Tessellation::new(Mode::Line, &vertices, Some(&indices)))
+  }
+
+  pub fn render_cmd<'a>(&'a self) -> RenderCommand<'a, LinesUniforms> {
     RenderCommand::new(None,
                        true,
-                       move |&(_, _, ref inst, ref color, _, _): &(_, _, UniformUpdate<Transform>, Uniform<[f32; 3]>, Uniform<f32>, _)| {
-                         inst.update(line.transform);
-                         color.update(line.object.color);
-                       },
-                       &line.object.tessellation,
+                       |_| {},
+                       &self.0,
                        1,
-                       Some(line.object.size))
+                       None)
   }
 }
 
-pub fn new_line_entity(line: &Vec<[f32; 3]>, seed: f32, x_offset: f32, z_offset: f32) -> Entity<Line> {
+pub fn new_line(points: &Vec<Position>, seed: f32, x_offset: f32, z_offset: f32) -> Line {
   let transform = Transform::default().translate(Position::new(seed * 50. + x_offset, 0., z_offset));
-  //let color = color_palette([0.5, 0., 0.5], [0.5, 0.5, 0.5], [0.5882, 0.1803, 0.3608], [0.25, 0.8, 0.25], seed*0.005);
   let salmon = [0.859, 0.188, 0.224];
   let golden = [1., 0.6, 0.0515];
   let color = lerp_color(&salmon, &golden, (seed * 100. * noise2(seed * 93743.3974, -34.)).cos().abs());
   let line = Line {
-    tessellation: Tessellation::new(Mode::LineStrip, line, None),
+    points: points.iter().map(|p| *p + Position::new(x_offset, 0., z_offset)).collect(),
     color: color,
-    size: (noise2(seed * 100., -100. * seed.cos()).sin() + 1.25).powf(2.)
   };
 
-  Entity::new(line, transform)
+  line
 }
 
-pub fn new_line(points_in: usize, points_out: usize, gap: f32, smooth: f32, seed: f32) -> Vec<[f32; 3]> {
+pub fn new_line_points(points_in: usize, points_out: usize, gap: f32, smooth: f32, seed: f32) -> Vec<Position> {
   assert!(points_in <= points_out && points_in > 1);
 
   // create control points
@@ -85,7 +104,7 @@ pub fn new_line(points_in: usize, points_out: usize, gap: f32, smooth: f32, seed
   let mut vertices = Vec::with_capacity(points_out);
 
   for ((x,y),z) in x_points.into_iter().zip(y_points).zip(z_points) {
-    vertices.push([x, y, z]);
+    vertices.push(Position::new(x, y, z));
   }
 
   vertices

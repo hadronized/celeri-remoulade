@@ -55,20 +55,19 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut camera = Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default());
 
   let plane = Entity::new(new_plane(), Transform::default().reorient(X_AXIS, -f32::consts::FRAC_PI_2).rescale(Scale::uni(10.)));
-  let mut lines = Vec::<Entity<Line>>::with_capacity(400);
+  let lines = {
+    let mut lines = Vec::<Line>::with_capacity(400);
 
-  for i in 0..lines.capacity() {
-    let seed = i as f32 / 1000.;
-    lines.push(new_line_entity(&new_line(100, 1000, 1., 0.2 + seed.sin().abs() * 0.1, seed), seed, -2.5, -5.));
-  }
+    for i in 0..lines.capacity() {
+      let seed = i as f32 / 1000.;
+      lines.push(new_line(&new_line_points(100, 1000, 1., 0.2 + seed.sin().abs() * 0.1, seed), seed, -2.5, -5.));
+    }
+
+    Lines::new(&lines)
+  };
 
   let skybox = new_cube();
   let skybox_program = new_skybox_program().unwrap();
-
-  // set camera projection
-  lines_program.update(|&(ref proj, _, _, _, _, _)| {
-    proj.update(camera.object);
-  });
 
   let mut cursor_at = [0., 0.]; // last cursor position known
   let mut cursor_down_at = [0., 0.]; // position where the cursor was pressed
@@ -139,13 +138,14 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     }
 
     // TODO: comment that line to enable debug camera
-    camera = anim_cam.at(t);
+    //camera = anim_cam.at(t);
     let cmask = anim_color_mask.at(t);
     let caberration = anim_chromatic_aberration.at(t);
     let acurvature = anim_curvature.at(t);
 
     // update the camera
-    lines_program.update(|&(_, ref view, _, _, ref jitter, ref curvature)| {
+    lines_program.update(|&(ref proj, ref view, ref jitter, ref curvature)| {
+      proj.update(camera.object);
       view.update(camera.transform);
       jitter.update(line_jitter * t.cos());
       curvature.update(acurvature);
@@ -161,7 +161,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
     // render the lines into the horizontal blur buffer
     Pipeline::new(&hblur_buffer, [0., 0., 0., 1.], vec![
-      &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect())
+      &ShadingCommand::new(&lines_program, |_|{}, vec![lines.render_cmd()])
     ]).run();
 
     // apply the horizontal blur and output into the vertical one
@@ -194,7 +194,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                                                 None)
                            ]),
       // render the lines before the blur
-      &ShadingCommand::new(&lines_program, |_|{}, lines.iter().map(|line| Line::render_cmd(line)).collect()),
+      &ShadingCommand::new(&lines_program, |_|{}, vec![lines.render_cmd()]),
       // bloom
       &ShadingCommand::new(&vblur_program,
                            |&(ref tex, ref ires)| {
