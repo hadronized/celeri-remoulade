@@ -340,7 +340,7 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, f32, Entity<M44>> {
 simple_animation!(animation_color_mask, Color, one(), [
 ]);
 
-simple_animation!(animation_chromatic_aberration, f32, 3., [
+simple_animation!(animation_chromatic_aberration, f32, 0., [
 ]);
 
 simple_animation!(animation_curvature, f32, 0., [
