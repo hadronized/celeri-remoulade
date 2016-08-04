@@ -25,7 +25,7 @@ use shaders::lines::*;
 use shaders::lines_pp::*;
 use shaders::skybox::*;
 
-const TRACK_PATH: &'static str = "./track.ogg";
+const TRACK_PATH: &'static str = "track/evoke16.ogg";
 const FOVY: f32 = f32::consts::FRAC_PI_4;
 const ZNEAR: f32 = 0.1;
 const ZFAR: f32 = 200.;
