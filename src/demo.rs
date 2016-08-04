@@ -50,13 +50,13 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let lines_pp = new_lines_pp().unwrap();
   let lines_program = new_lines_program().unwrap();
 
-  let mut line_jitter = 0.;
+  let mut line_jitter = 1.;
 
   let mut camera = Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default());
 
   let plane = Entity::new(new_plane(), Transform::default().reorient(X_AXIS, -f32::consts::FRAC_PI_2).rescale(Scale::uni(10.)));
   let lines = {
-    let mut lines = Vec::<Line>::with_capacity(400);
+    let mut lines = Vec::<Line>::with_capacity(4000);
 
     for i in 0..lines.capacity() {
       let seed = i as f32 / 1000.;

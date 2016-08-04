@@ -49,7 +49,6 @@ impl Lines {
 }
 
 pub fn new_line(points: &Vec<Position>, seed: f32, x_offset: f32, z_offset: f32) -> Line {
-  let transform = Transform::default().translate(Position::new(seed * 50. + x_offset, 0., z_offset));
   let salmon = [0.859, 0.188, 0.224];
   let golden = [1., 0.6, 0.0515];
   let color = lerp_color(&salmon, &golden, (seed * 100. * noise2(seed * 93743.3974, -34.)).cos().abs());
@@ -61,6 +60,7 @@ pub fn new_line(points: &Vec<Position>, seed: f32, x_offset: f32, z_offset: f32)
   line
 }
 
+// FIXME: only one sampler is required (additive with Position)
 pub fn new_line_points(points_in: usize, points_out: usize, gap: f32, smooth: f32, seed: f32) -> Vec<Position> {
   assert!(points_in <= points_out && points_in > 1);
 
