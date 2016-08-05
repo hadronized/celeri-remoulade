@@ -6,7 +6,7 @@ use ion::objects::{new_cube, new_plane};
 use ion::projection::perspective;
 use ion::texture::load_rgba_texture;
 use ion::window::{self, Action, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
-use luminance::{Dim2, Equation, Factor, Flat, M44, Mode, RGBA32F};
+use luminance::{self, Dim2, Equation, Factor, Flat, Filter, M44, Mode, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot, Tessellation};
 use nalgebra::{Quaternion, Rotate, one};
 use std::f32;
@@ -39,11 +39,11 @@ const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, scroll: Scroll) -> Result<Box<FnMut() -> bool>, String> {
   // logo
-  let logo = load_rgba_texture(LOGO_PATH).unwrap();
+  let logo_sampler = luminance::Sampler { minification: Filter::Nearest, magnification: Filter::Nearest, .. luminance::Sampler::default() };
+  let logo = load_rgba_texture(LOGO_PATH, &logo_sampler).unwrap();
   let dim = logo.size;
   let logo_h = 0.5;
-  deb!("dim: {:?}", dim);
-  let logo_w = (dim.1 as f32 / dim.0 as f32) / logo_h;
+  let logo_w = logo_h * dim.0 as f32 / dim.1 as f32 * (h as f32 / w as f32);
   let logo_quad = Tessellation::new(Mode::TriangleStrip,
                                     &[
                                       [-logo_w,  logo_h, 0., 0.],
@@ -256,7 +256,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                              tex.update(&logo);
                            },
                            vec![
-                            RenderCommand::new(None,
+                            RenderCommand::new(Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement)),
                                                false,
                                                |_| {},
                                                &logo_quad,
