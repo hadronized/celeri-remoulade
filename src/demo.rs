@@ -42,7 +42,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let logo_sampler = luminance::Sampler { minification: Filter::Nearest, magnification: Filter::Nearest, .. luminance::Sampler::default() };
   let logo = load_rgba_texture(LOGO_PATH, &logo_sampler).unwrap();
   let dim = logo.size;
-  let logo_h = 0.5;
+  let logo_h = 0.5 * dim.1 as f32 / h as f32;
   let logo_w = logo_h * dim.0 as f32 / dim.1 as f32 * (h as f32 / w as f32);
   let logo_quad = Tessellation::new(Mode::TriangleStrip,
                                     &[
