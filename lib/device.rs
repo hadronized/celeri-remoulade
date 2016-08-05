@@ -23,7 +23,7 @@ pub struct Device {
 }
 
 impl Device {
-  pub fn new(track_path: &Path) -> Self {
+  pub fn new<P>(track_path: P) -> Self where P: AsRef<Path> {
     // initialising OpenAL
     let al_device = alc::Device::open(None).unwrap();
     let al_ctx = al_device.create_context(&[]).unwrap();

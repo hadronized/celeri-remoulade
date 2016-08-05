@@ -4,12 +4,12 @@ use ion::device::Device;
 use ion::entity::*;
 use ion::objects::{new_cube, new_plane};
 use ion::projection::perspective;
+use ion::texture::load_rgba_texture;
 use ion::window::{self, Action, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
 use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot};
 use nalgebra::{Quaternion, Rotate, one};
 use std::f32;
-use std::path::Path;
 use time;
 
 use gui::ProgressBar;
@@ -26,6 +26,7 @@ use shaders::lines_pp::*;
 use shaders::skybox::*;
 
 const TRACK_PATH: &'static str = "data/track/evoke16.ogg";
+const LOGO_PATH: &'static str = "data/logo.png";
 const FOVY: f32 = f32::consts::FRAC_PI_4;
 const ZNEAR: f32 = 0.1;
 const ZFAR: f32 = 200.;
@@ -37,6 +38,7 @@ const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, scroll: Scroll) -> Result<Box<FnMut() -> bool>, String> {
   // load the logo
+  let logo = load_rgba_texture(LOGO_PATH);
 
   let back_buffer = Framebuffer::default((w, h));
   let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
@@ -83,7 +85,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut anim_chromatic_aberration = animation_chromatic_aberration();
   let mut anim_curvature = animation_curvature();
 
-  let mut dev = Device::new(Path::new(TRACK_PATH));
+  let mut dev = Device::new(TRACK_PATH);
 
   Ok(Box::new(move || {
     let t = dev.playback_cursor();
