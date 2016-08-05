@@ -40,8 +40,7 @@ const LOGO_SCALE: f32 = 1.;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, scroll: Scroll) -> Result<Box<FnMut() -> bool>, String> {
   // logo
-  let logo_sampler = luminance::Sampler { minification: Filter::Nearest, magnification: Filter::Nearest, .. luminance::Sampler::default() };
-  let logo = load_rgba_texture(LOGO_PATH, &logo_sampler).unwrap();
+  let logo = load_rgba_texture(LOGO_PATH, &luminance::Sampler::default()).unwrap();
   let dim = logo.size;
   let logo_h = LOGO_SCALE * dim.1 as f32 / h as f32;
   let logo_w = logo_h * dim.0 as f32 / dim.1 as f32 * (h as f32 / w as f32);
