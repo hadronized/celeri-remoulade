@@ -6,5 +6,6 @@ pub mod blur;
 pub mod gui_const_color;
 pub mod lines;
 pub mod lines_pp;
+pub mod quad_tex;
 pub mod skybox;
 //pub mod spark;

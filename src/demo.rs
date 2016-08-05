@@ -6,8 +6,8 @@ use ion::objects::{new_cube, new_plane};
 use ion::projection::perspective;
 use ion::texture::load_rgba_texture;
 use ion::window::{self, Action, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
-use luminance::{Dim2, Equation, Factor, Flat, M44, RGBA32F};
-use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot};
+use luminance::{Dim2, Equation, Factor, Flat, M44, Mode, RGBA32F};
+use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot, Tessellation};
 use nalgebra::{Quaternion, Rotate, one};
 use std::f32;
 use time;
@@ -23,6 +23,7 @@ use shaders::blur::*;
 use shaders::gui_const_color::*;
 use shaders::lines::*;
 use shaders::lines_pp::*;
+use shaders::quad_tex::*;
 use shaders::skybox::*;
 
 const TRACK_PATH: &'static str = "data/track/evoke16.ogg";
@@ -37,8 +38,21 @@ const CAMERA_FORWARD_SENSITIVITY: f32 = 0.1;
 const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, scroll: Scroll) -> Result<Box<FnMut() -> bool>, String> {
-  // load the logo
-  let logo = load_rgba_texture(LOGO_PATH);
+  // logo
+  let logo = load_rgba_texture(LOGO_PATH).unwrap();
+  let dim = logo.size;
+  let logo_h = 0.5;
+  deb!("dim: {:?}", dim);
+  let logo_w = (dim.1 as f32 / dim.0 as f32) / logo_h;
+  let logo_quad = Tessellation::new(Mode::TriangleStrip,
+                                    &[
+                                      [-logo_w,  logo_h, 0., 0.],
+                                      [-logo_w, -logo_h, 0., 1.],
+                                      [ logo_w,  logo_h, 1., 0.],
+                                      [ logo_w, -logo_h, 1., 1.],
+                                    ],
+                                    None);
+  let quad_tex_program = new_quad_tex_program().unwrap();
 
   let back_buffer = Framebuffer::default((w, h));
   let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
@@ -168,7 +182,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
     // render the lines into the horizontal blur buffer
     Pipeline::new(&hblur_buffer, [0., 0., 0., 1.], vec![
-      &ShadingCommand::new(&lines_program, |_|{}, vec![lines.render_cmd()])
+      &ShadingCommand::new(&lines_program, |_| {}, vec![lines.render_cmd()])
     ]).run();
 
     // apply the horizontal blur and output into the vertical one
@@ -181,7 +195,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            vec![
                              RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::Zero)),
                                                 false,
-                                                |_|{},
+                                                |_| {},
                                                 &plane.object,
                                                 1,
                                                 None)
@@ -191,17 +205,17 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     Pipeline::new(&pp_buffer, [0., 0., 0., 1.], vec![
       // skybox
       &ShadingCommand::new(&skybox_program,
-                           |_|{}, 
+                           |_| {}, 
                            vec![
                              RenderCommand::new(None,
                                                 true,
-                                                |_|{},
+                                                |_| {},
                                                 &skybox,
                                                 1,
                                                 None)
                            ]),
       // render the lines before the blur
-      &ShadingCommand::new(&lines_program, |_|{}, vec![lines.render_cmd()]),
+      &ShadingCommand::new(&lines_program, |_| {}, vec![lines.render_cmd()]),
       // bloom
       &ShadingCommand::new(&vblur_program,
                            |&(ref tex, ref ires)| {
@@ -211,7 +225,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            vec![
                              RenderCommand::new(Some((Equation::Additive, Factor::One, Factor::One)),
                                                 false,
-                                                |_|{},
+                                                |_| {},
                                                 &plane.object,
                                                 1,
                                                 None)
@@ -230,11 +244,26 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            vec![
                              RenderCommand::new(None,
                                                 true,
-                                                |_|{},
+                                                |_| {},
                                                 &plane.object,
                                                 1,
                                                 None)
                            ]),
+
+      // render the logo
+      &ShadingCommand::new(&quad_tex_program,
+                           |ref tex| {
+                             tex.update(&logo);
+                           },
+                           vec![
+                            RenderCommand::new(None,
+                                               false,
+                                               |_| {},
+                                               &logo_quad,
+                                               1,
+                                               None)
+                           ]),
+
       // render the GUI overlay
       &ShadingCommand::new(&gui_const_color_program,
                            |_| {},
