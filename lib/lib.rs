@@ -1,5 +1,6 @@
 extern crate gl;
 pub extern crate glfw;
+extern crate image;
 extern crate luminance;
 extern crate luminance_gl;
 extern crate nalgebra;
@@ -18,5 +19,6 @@ pub mod report;
 #[macro_use]
 pub mod resource;
 pub mod shader;
+pub mod texture;
 pub mod transform;
 pub mod window;

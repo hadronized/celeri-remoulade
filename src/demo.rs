@@ -36,6 +36,8 @@ const CAMERA_FORWARD_SENSITIVITY: f32 = 0.1;
 const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, scroll: Scroll) -> Result<Box<FnMut() -> bool>, String> {
+  // load the logo
+
   let back_buffer = Framebuffer::default((w, h));
   let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();

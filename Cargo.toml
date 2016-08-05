@@ -15,10 +15,11 @@ default = ["debug_camera"]
 debug_camera = []
 
 [dependencies]
-luminance = "0.6.0"
-luminance-gl = "0.5.0"
+luminance = "0.6.2"
+luminance-gl = "0.5.3"
 gl = "0.5.2"
 glfw = "0.3.0"
+image = "0.10.1"
 nalgebra = { git = "https://github.com/phaazon/nalgebra.git", rev = "1fdd8979afa464d1a13d0bfe926e0d9aaab0ee1a" }
 openal-rs = "0.1.4"
 vorbis = "0.0.14"
