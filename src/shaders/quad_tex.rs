@@ -1,5 +1,5 @@
 use ion::shader::{Program, ProgramError, Uniform, new_program};
-use ion::texture::{RGBA8UI, TextureImage};
+use ion::texture::{RGBA32F, TextureImage};
 
 const VS: &'static str = "\
 layout (location = 0) in vec4 couv;\n\
@@ -16,14 +16,13 @@ in vec2 v_uv;\n\
 \n\
 out vec4 frag;\n
 \n\
-uniform usampler2D tex;\n\
+uniform sampler2D tex;\n\
 \n\
 void main() {\n\
-  frag = texture(tex, v_uv, 0);\n\
-  frag /= 255.;\n\
+  frag = texture(tex, v_uv);\n\
 }";
 
-pub type QuadTexUniforms<'a> = Uniform<&'a TextureImage<RGBA8UI>>;
+pub type QuadTexUniforms<'a> = Uniform<&'a TextureImage<RGBA32F>>;
 
 pub type QuadTexProgram<'a> = Program<QuadTexUniforms<'a>>;
 
