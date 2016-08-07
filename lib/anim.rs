@@ -307,23 +307,23 @@ fn around_search_lower_cp<T>(cps: &Vec<Key<T>>, mut i: usize, t: Time) -> Option
   Some(i)
 }
 
-// FIXME: not sure we need mutability here
-/// Continuous animation.
+// FIXME: not sure we need mutability here, because it would lead into unreproductible effects
+/// Continuous value.
 ///
-/// This type wraps a `A` as a function of time `T`. It has a simple semantic: `at`, giving the
+/// This type wraps a `A` as a function of time `f32`. It has a simple semantic: `at`, giving the
 /// value at the wished time.
-pub struct Cont<'a, T, A> {
-  closure: Box<FnMut(T) -> A + 'a>
+pub struct Cont<'a, A> {
+  closure: Box<FnMut(f32) -> A + 'a>
 }
 
-impl<'a, T, A> Cont<'a, T, A> {
-  pub fn new<F>(f: F) -> Self where F: 'a + FnMut(T) -> A {
+impl<'a, A> Cont<'a, A> {
+  pub fn new<F>(f: F) -> Self where F: 'a + FnMut(f32) -> A {
     Cont {
       closure: Box::new(f)
     }
   }
 
-  pub fn at(&mut self, t: T) -> A {
+  pub fn at(&mut self, t: f32) -> A {
     (self.closure)(t)
   }
 }
@@ -331,7 +331,7 @@ impl<'a, T, A> Cont<'a, T, A> {
 #[macro_export]
 macro_rules! simple_animation {
   ($name:ident, $t:ty, $def:expr, [ $( ($k:expr, $v:expr, $i:expr) ),* ]) => {
-    fn $name<'a>() -> Cont<'a, f32, $t> {
+    fn $name<'a>() -> Cont<'a, $t> {
       let mut sampler = Sampler::new();
       let keys = AnimParam::new(
         vec![

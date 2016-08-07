@@ -339,7 +339,7 @@ fn handle_device_keys(dev: &mut Device, key: window::Key) {
   }
 }
 
-fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, f32, Entity<M44>> {
+fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
   // position keys
   let mut pos_sampler = Sampler::new();
   let pos_keys = AnimParam::new(
