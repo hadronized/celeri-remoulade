@@ -3,7 +3,7 @@ use std::os::raw::c_void;
 use std::process::exit;
 use std::sync::mpsc;
 
-pub use glfw::{self, Action, Context, Key, MouseButton};
+pub use glfw::{self, Action, Context, CursorMode, Key, MouseButton};
 
 pub type Keyboard = mpsc::Receiver<(Key, Action)>;
 pub type Mouse = mpsc::Receiver<(MouseButton, Action)>;
@@ -35,11 +35,14 @@ pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove, Scroll) -> Res
   };
 
   window.make_current();
-  window.set_key_polling(true);
-  window.set_cursor_pos_polling(true);
-  window.set_mouse_button_polling(true);
-  window.set_scroll_polling(true);
-  //glfw.set_swap_interval(0); // TODO: uncomment to unleash the FPS! \o
+  if cfg!(feature = "release") {
+    window.set_cursor_mode(CursorMode::Disabled);
+  } else {
+    window.set_key_polling(true);
+    window.set_cursor_pos_polling(true);
+    window.set_mouse_button_polling(true);
+    window.set_scroll_polling(true);
+  }
 
   // init OpenGL
   gl::load_with(|s| window.get_proc_address(s) as *const c_void);

@@ -153,7 +153,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
     }
 
     // TODO: comment that line to enable debug camera
-    //camera = anim_cam.at(t);
+    camera = anim_cam.at(t);
     let cmask = anim_color_mask.at(t);
     let caberration = anim_chromatic_aberration.at(t);
     let acurvature = anim_curvature.at(t);
@@ -347,6 +347,8 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
       Key::new(15.126, Position::new(-30.327822, -0.42729962, -6.139253), Interpolation::Hold),
       Key::new(15.126, Position::new(-13.774756, -0.056465805, -0.014713302), Interpolation::Linear),
       Key::new(19.5, Position::new(-15.587922, -8.561965, -29.087877), Interpolation::Hold),
+      Key::new(19.5, Position::new(-3.2653642, -0.3037783, -8.251294), Interpolation::Linear),
+      Key::new(23.5, Position::new(-3.2653642, -0.3037783, -8.251294), Interpolation::Hold),
 
       Key::new(1000., Position::new(0., 0., 0.), Interpolation::Hold),
   ]);
@@ -364,6 +366,8 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
       Key::new(15.126, Orientation::new_with_quaternion(Quaternion::new(-0.5241489, 0.04835032, 0.7872599, 0.32111943)), Interpolation::Hold),
       Key::new(15.126, Orientation::new_with_quaternion(Quaternion::new(-0.03876486, 0.2965498, 0.945911, -0.12569757)), Interpolation::Linear),
       Key::new(19.5, Orientation::new_with_quaternion(Quaternion::new(0.01439951, -0.38548586, 0.90561384, -0.17617564)), Interpolation::Hold),
+      Key::new(19.5, Orientation::new_with_quaternion(Quaternion::new(0.8218363, -0.09958727, 0.5587817, 0.04918299)), Interpolation::Linear),
+      Key::new(23.5, Orientation::new_with_quaternion(Quaternion::new(0.08246222, 0.22860557, 0.88677514, -0.39313444)), Interpolation::Hold),
 
       Key::new(1000., Orientation::new_with_quaternion(Quaternion::new(0.7219135, -0.6905788, -0.040629696, 0.017061736)), Interpolation::Hold),
   ]);
@@ -388,7 +392,9 @@ simple_animation!(animation_color_mask, Color, one(), [
   (13., one(), Interpolation::Cosine),
   (15.25, zero(), Interpolation::Cosine),
   (17.5, one(), Interpolation::Cosine),
-  (19.5, zero(), Interpolation::Hold),
+  (19.5, zero(), Interpolation::Cosine),
+  (21.76, one(), Interpolation::Cosine),
+  (23.5, zero(), Interpolation::Hold),
 
   (1000., zero(), Interpolation::Hold)
 ]);
@@ -399,6 +405,8 @@ simple_animation!(animation_chromatic_aberration, f32, 0., [
 simple_animation!(animation_curvature, f32, 0., [
   (15.25, 0., Interpolation::Cosine),
   (19.5, 1., Interpolation::Hold),
+  (19.5, 0., Interpolation::Cosine),
+  (23.5, 1., Interpolation::Hold),
 
   (100., 1., Interpolation::Hold)
 ]);
