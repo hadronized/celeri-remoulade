@@ -98,6 +98,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut anim_color_mask = animation_color_mask();
   let mut anim_chromatic_aberration = animation_chromatic_aberration();
   let mut anim_curvature = animation_curvature();
+  let mut anim_logo_mask = animation_logo_mask();
 
   let mut dev = Device::new(TRACK_PATH);
 
@@ -163,6 +164,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     let cmask = anim_color_mask.at(t);
     let caberration = anim_chromatic_aberration.at(t);
     let acurvature = anim_curvature.at(t);
+    let logo_mask = anim_logo_mask.at(t);
 
     // update the camera
     lines_program.update(|&(ref proj, ref view, ref jitter, ref curvature)| {
@@ -252,8 +254,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
 
       // render the logo
       &ShadingCommand::new(&quad_tex_program,
-                           |ref tex| {
+                           |&(ref tex, ref mask)| {
                              tex.update(&logo);
+                             mask.update(logo_mask);
                            },
                            vec![
                             RenderCommand::new(Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement)),
@@ -377,4 +380,7 @@ simple_animation!(animation_chromatic_aberration, f32, 0., [
 ]);
 
 simple_animation!(animation_curvature, f32, 0., [
+]);
+
+simple_animation!(animation_logo_mask, f32, 0., [
 ]);
