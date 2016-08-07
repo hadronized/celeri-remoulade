@@ -26,6 +26,7 @@ use shaders::lines_pp::*;
 use shaders::quad_tex::*;
 use shaders::skybox::*;
 
+pub const DEMO_TITLE: &'static str = "Céleri Rémoulade";
 const TRACK_PATH: &'static str = "data/track/evoke16.ogg";
 const LOGO_PATH: &'static str = "data/logo.png";
 const FOVY: f32 = f32::consts::FRAC_PI_4;
@@ -152,7 +153,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
     }
 
     // TODO: comment that line to enable debug camera
-    camera = anim_cam.at(t);
+    //camera = anim_cam.at(t);
     let cmask = anim_color_mask.at(t);
     let caberration = anim_chromatic_aberration.at(t);
     let acurvature = anim_curvature.at(t);
@@ -339,9 +340,13 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
     vec![
       Key::new(0., Position::new(0., 0., 0.), Interpolation::Hold),
       Key::new(4.69, Position::new(-5.978943, -0.08311983, -2.977364), Interpolation::Linear),
-      Key::new(9.5, Position::new(-6.999977, -0.1490117, -2.9599738), Interpolation::Hold),
+      Key::new(9., Position::new(-6.999977, -0.1490117, -2.9599738), Interpolation::Hold),
+      Key::new(9., Position::new(-12.87, -0.22622976, -31.68983), Interpolation::Linear),
+      Key::new(12., Position::new(-12.9287405, -1.0739254, -25.373144), Interpolation::Hold),
+      Key::new(12., Position::new(-30.149199, 0.15503363, -6.3875837), Interpolation::Linear),
+      Key::new(15.126, Position::new(-30.327822, -0.42729962, -6.139253), Interpolation::Hold),
 
-      Key::new(100., Position::new(0., 0., 0.), Interpolation::Hold),
+      Key::new(1000., Position::new(0., 0., 0.), Interpolation::Hold),
   ]);
 
   // orientation keys
@@ -350,9 +355,13 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
     vec![
       Key::new(0., Orientation::new_with_quaternion(Quaternion::new(0.7219135, -0.6905788, -0.040629696, 0.017061736)), Interpolation::Hold),
       Key::new(4.69, Orientation::new_with_quaternion(Quaternion::new(0.67423373, 0.2073435, 0.7026737, 0.09303007)), Interpolation::Linear),
-      Key::new(9.5, Orientation::new_with_quaternion(Quaternion::new(0.1426986, 0.37909356, 0.9058717, 0.12370891)), Interpolation::Hold),
+      Key::new(9., Orientation::new_with_quaternion(Quaternion::new(0.1426986, 0.37909356, 0.9058717, 0.12370891)), Interpolation::Hold),
+      Key::new(9., Orientation::new_with_quaternion(Quaternion::new(-0.005634076, -0.0009556832, 0.9821145, 0.18817042)), Interpolation::Linear),
+      Key::new(12., Orientation::new_with_quaternion(Quaternion::new(0.0044733556, -0.0023604971, 0.9555309, 0.29482993)), Interpolation::Hold),
+      Key::new(12., Orientation::new_with_quaternion(Quaternion::new(-0.90732145, 0.043486502, 0.3169009, -0.27280524)), Interpolation::Linear),
+      Key::new(15.126, Orientation::new_with_quaternion(Quaternion::new(-0.5241489, 0.04835032, 0.7872599, 0.32111943)), Interpolation::Hold),
 
-      Key::new(100., Orientation::new_with_quaternion(Quaternion::new(0.7219135, -0.6905788, -0.040629696, 0.017061736)), Interpolation::Hold),
+      Key::new(1000., Orientation::new_with_quaternion(Quaternion::new(0.7219135, -0.6905788, -0.040629696, 0.017061736)), Interpolation::Hold),
   ]);
 
   Cont::new(move |t| {
@@ -369,14 +378,24 @@ simple_animation!(animation_color_mask, Color, one(), [
   (2.35, one(), Interpolation::Cosine),
   (4.69, zero(), Interpolation::Cosine),
   (6., one(), Interpolation::Cosine),
-  (9.5, zero(), Interpolation::Hold),
-  (100., zero(), Interpolation::Hold)
+  (9., zero(), Interpolation::Cosine),
+  (11., one(), Interpolation::Cosine),
+  (12., zero(), Interpolation::Cosine),
+  (13., one(), Interpolation::Cosine),
+  (15.25, zero(), Interpolation::Cosine),
+  (17.5, one(), Interpolation::Hold),
+
+  (1000., zero(), Interpolation::Hold)
 ]);
 
 simple_animation!(animation_chromatic_aberration, f32, 0., [
 ]);
 
 simple_animation!(animation_curvature, f32, 0., [
+  (15.25, 0., Interpolation::Cosine),
+  (19.5, 1., Interpolation::Hold),
+
+  (100., 1., Interpolation::Hold)
 ]);
 
 simple_animation!(animation_logo_mask, f32, 0., [
