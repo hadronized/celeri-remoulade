@@ -324,12 +324,12 @@ impl<'a, A> Cont<'a, A> {
   }
 
   /// Turn a set of discret values that happen at given moments into a continuous step value.
-  pub fn from_discrete(def: A, mut moments: Vec<(f32, A)>) -> Self where A: 'a + Copy {
+  pub fn from_discrete(def: A, mut moments: Vec<(f32, A)>) -> Self where A: 'a + Clone {
     moments.sort_by(|a, b| b.0.partial_cmp(&b.0).unwrap());
 
     Cont {
       closure: Box::new(move |t| {
-        moments.binary_search_by(|a| a.0.partial_cmp(&t).unwrap()).ok().map_or(def, |i| moments[i].1)
+        moments.binary_search_by(|a| a.0.partial_cmp(&t).unwrap()).ok().map_or(def.clone(), |i| moments[i].1.clone())
       })
     }
   }
