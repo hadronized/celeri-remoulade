@@ -8,7 +8,7 @@ use ion::texture::load_rgba_texture;
 use ion::window::{self, Action, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
 use luminance::{self, Dim2, Equation, Factor, Flat, Filter, M44, Mode, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot, Tessellation};
-use nalgebra::{Quaternion, Rotate, one};
+use nalgebra::{Quaternion, Rotate, one, zero};
 use std::f32;
 use time;
 
@@ -38,7 +38,7 @@ const CAMERA_FORWARD_SENSITIVITY: f32 = 0.1;
 const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 const LOGO_SCALE: f32 = 1.;
 
-pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, scroll: Scroll) -> Result<Box<FnMut() -> bool>, String> {
+pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _: Scroll) -> Result<Box<FnMut() -> bool>, String> {
   // logo
   let logo = load_rgba_texture(LOGO_PATH, &luminance::Sampler::default()).unwrap();
   let dim = logo.size;
@@ -69,13 +69,11 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let lines_pp = new_lines_pp().unwrap();
   let lines_program = new_lines_program().unwrap();
 
-  let mut line_jitter = 1.;
-
   let mut camera = Entity::new(perspective(w as f32 / h as f32, FOVY, ZNEAR, ZFAR), Transform::default());
 
   let plane = Entity::new(new_plane(), Transform::default().reorient(X_AXIS, -f32::consts::FRAC_PI_2).rescale(Scale::uni(10.)));
   let lines = {
-    let mut lines = Vec::<Line>::with_capacity(400);
+    let mut lines = Vec::<Line>::with_capacity(1000);
 
     for i in 0..lines.capacity() {
       let seed = i as f32 / 1000.;
@@ -99,18 +97,12 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
   let mut anim_chromatic_aberration = animation_chromatic_aberration();
   let mut anim_curvature = animation_curvature();
   let mut anim_logo_mask = animation_logo_mask();
+  let mut anim_jitter = animation_jitter();
 
   let mut dev = Device::new(TRACK_PATH);
 
   Ok(Box::new(move || {
     let t = dev.playback_cursor();
-
-    let start_time = time::precise_time_s();
-
-    // FIXME: debug; use to alter the line jitter
-    while let Ok(scroll) = scroll.try_recv() {
-      line_jitter = (line_jitter + 0.025 * scroll[1] as f32).max(0.);
-    }
 
     while let Ok((mouse_button, action)) = mouse.try_recv() {
       match (mouse_button, action) {
@@ -160,17 +152,18 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
     }
 
     // TODO: comment that line to enable debug camera
-    //camera = anim_cam.at(t);
+    camera = anim_cam.at(t);
     let cmask = anim_color_mask.at(t);
     let caberration = anim_chromatic_aberration.at(t);
     let acurvature = anim_curvature.at(t);
     let logo_mask = anim_logo_mask.at(t);
+    let ajitter = anim_jitter.at(t);
 
     // update the camera
     lines_program.update(|&(ref proj, ref view, ref jitter, ref curvature)| {
       proj.update(camera.object);
       view.update(camera.transform);
-      jitter.update(line_jitter * t.cos());
+      jitter.update(ajitter * t.cos());
       curvature.update(acurvature);
     });
     skybox_program.update(|&(ref proj, ref view, ref zfar)| {
@@ -276,9 +269,6 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, sc
                            ])
     ]).run();
 
-    let end_time = time::precise_time_s();
-    deb!("fps: {}", (end_time - start_time).recip());
-
     true
   }))
 }
@@ -325,8 +315,8 @@ fn handle_camera_keys(camera: &mut Entity<M44>, key: window::Key, t: f32) {
     window::Key::C => { // print camera information on stdout (useful for animation keys)
       let p = camera.transform.translation;
       let q = camera.transform.orientation.quaternion();
-      info!("position: anim::window::Key::new({}, Position::new({}, {}, {})),", t, p[0], p[1], p[2]);
-      info!("orientation: anim::Key::new({}, Orientation::new_with_quaternion(Quaternion::new({}, {}, {}, {}))),", t, q[0], q[1], q[2], q[3]);
+      info!("position: Key::new({}, Position::new({}, {}, {})),", t, p[0], p[1], p[2]);
+      info!("orientation: Key::new({}, Orientation::new_with_quaternion(Quaternion::new({}, {}, {}, {}))),", t, q[0], q[1], q[2], q[3]);
       info!("");
     },
     _ => {}
@@ -347,21 +337,22 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
   let mut pos_sampler = Sampler::new();
   let pos_keys = AnimParam::new(
     vec![
-      Key::new(0., Position::new(0., 0., 0.), Interpolation::Linear),
-      Key::new(3., Position::new(-2.4647493, -0.3964165, -6.503414), Interpolation::CatmullRom),
-      Key::new(6., Position::new(-3.0137098, -1.5013391, -14.876995), Interpolation::Hold),
-      Key::new(30., Position::new(-3.0137098, -1.5013391, -14.876995), Interpolation::Linear),
+      Key::new(0., Position::new(0., 0., 0.), Interpolation::Hold),
+      Key::new(4.69, Position::new(-5.978943, -0.08311983, -2.977364), Interpolation::Linear),
+      Key::new(9.5, Position::new(-6.999977, -0.1490117, -2.9599738), Interpolation::Hold),
+
+      Key::new(100., Position::new(0., 0., 0.), Interpolation::Hold),
   ]);
 
   // orientation keys
   let mut orient_sampler = Sampler::new();
   let orient_keys = AnimParam::new(
     vec![
-      Key::new(0., Orientation::new_with_quaternion(Quaternion::new(0.8946971, -0.4456822, -0.029346175, -0.004680205)), Interpolation::Cosine),
-      Key::new(3., Orientation::new_with_quaternion(Quaternion::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), Interpolation::Hold),
-      Key::new(30., Orientation::new_with_quaternion(Quaternion::new(0.98959786, 0.09600604, 0.024007652, 0.10438307)), Interpolation::Cosine),
-      //Key::new(6., Orientation::new_with_quaternion(Quaternion::new(0.97801495, 0.07943316, 0.17186677, 0.08734873)), Interpolation::Cosine),
-      //Key::new(10., Orientation::new_with_quaternion(Quaternion::new(0.8595459, 0.10456929, -0.28957868, -0.4078911)), Interpolation::Hold)
+      Key::new(0., Orientation::new_with_quaternion(Quaternion::new(0.7219135, -0.6905788, -0.040629696, 0.017061736)), Interpolation::Hold),
+      Key::new(4.69, Orientation::new_with_quaternion(Quaternion::new(0.67423373, 0.2073435, 0.7026737, 0.09303007)), Interpolation::Linear),
+      Key::new(9.5, Orientation::new_with_quaternion(Quaternion::new(0.1426986, 0.37909356, 0.9058717, 0.12370891)), Interpolation::Hold),
+
+      Key::new(100., Orientation::new_with_quaternion(Quaternion::new(0.7219135, -0.6905788, -0.040629696, 0.017061736)), Interpolation::Hold),
   ]);
 
   Cont::new(move |t| {
@@ -374,6 +365,12 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
 }
 
 simple_animation!(animation_color_mask, Color, one(), [
+  (0., zero(), Interpolation::Cosine),
+  (2.35, one(), Interpolation::Cosine),
+  (4.69, zero(), Interpolation::Cosine),
+  (6., one(), Interpolation::Cosine),
+  (9.5, zero(), Interpolation::Hold),
+  (100., zero(), Interpolation::Hold)
 ]);
 
 simple_animation!(animation_chromatic_aberration, f32, 0., [
@@ -383,4 +380,7 @@ simple_animation!(animation_curvature, f32, 0., [
 ]);
 
 simple_animation!(animation_logo_mask, f32, 0., [
+]);
+
+simple_animation!(animation_jitter, f32, 0., [
 ]);
