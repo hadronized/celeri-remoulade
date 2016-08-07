@@ -380,8 +380,8 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
       Key::new(26.58, Orientation::new_with_quaternion(Quaternion::new(0.0052094115, -0.3049593, 0.95047086, -0.05977425)), Interpolation::Linear),
       Key::new(30.5, Orientation::new_with_quaternion(Quaternion::new(-0.081626624, 0.2947656, 0.92182285, -0.23808531)), Interpolation::Hold),
       Key::new(30.5, Orientation::new_with_quaternion(Quaternion::new(0.003683282, 0.042291965, -0.99909514, 0.0012446779)), Interpolation::Linear),
-      Key::new(34.98231937, Orientation::new_with_quaternion(Quaternion::new(0.0038565996, -0.15595156, -0.9877539, 0.00049236434)), Interpolation::Linear),
-      Key::new(50.710., Orientation::new_with_quaternion(Quaternion::new(-0.024977501, 0.18687618, -0.9820563, 0.003384897)), Interpolation::Hold),
+      Key::new(34.98, Orientation::new_with_quaternion(Quaternion::new(0.0038565996, -0.15595156, -0.9877539, 0.00049236434)), Interpolation::Linear),
+      Key::new(50.710, Orientation::new_with_quaternion(Quaternion::new(-0.024977501, 0.18687618, -0.9820563, 0.003384897)), Interpolation::Hold),
 
       Key::new(1000., Orientation::new_with_quaternion(Quaternion::new(0.7219135, -0.6905788, -0.040629696, 0.017061736)), Interpolation::Hold),
   ]);
