@@ -404,7 +404,7 @@ simple_animation!(animation_color_mask, Color, one(), [
   (11., one(), Interpolation::Cosine),
   (12., zero(), Interpolation::Cosine),
   (13., one(), Interpolation::Cosine),
-  (15.25, zero(), Interpolation::Cosine),
+  (15.126, zero(), Interpolation::Cosine),
   (17.5, one(), Interpolation::Cosine),
   (19.5, zero(), Interpolation::Cosine),
   (21.76, one(), Interpolation::Cosine),
