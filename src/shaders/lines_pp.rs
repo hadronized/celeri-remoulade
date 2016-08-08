@@ -44,6 +44,9 @@ void main() {\n\
 
   // output
   frag = color * vec4(color_mask, 1.);\n\
+
+  // gamma correction
+  frag.rgb = pow(frag.rgb, vec3(1. / 2.2));\n\
 }";
 
 pub type LinesPP<'a> = Program<(Uniform<&'a Texture<Flat, Dim2, RGBA32F>>,
