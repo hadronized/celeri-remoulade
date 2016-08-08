@@ -22,8 +22,8 @@ in float v_y;\n\
 out vec4 frag;\n
 \n\
 void main() {\n\
-  vec3 bottom = vec3(.271, .063, .329);\n\
-  vec3 top = .5 * vec3(.565, .188, .353);\n\
+  vec3 top = .25 * vec3(.282, .063, .329);\n\
+  vec3 bottom = .25 * vec3(.122, .078, .494);\n\
   float t = cos(3.1415926535 * max(0., v_y));\n\
   vec3 c = top * t + bottom * (1. - t);\n\
   frag = vec4(c, 1.);\n\
