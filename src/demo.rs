@@ -164,7 +164,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
     lines_program.update(|&(ref proj, ref view, ref jitter, ref curvature)| {
       proj.update(camera.object);
       view.update(camera.transform);
-      jitter.update(ajitter * t.cos());
+      jitter.update(ajitter);
       curvature.update(acurvature);
     });
     skybox_program.update(|&(ref proj, ref view, ref zfar)| {
@@ -445,7 +445,11 @@ simple_animation!(animation_jitter, f32, 0., [
   (42.788, 0.25, Interpolation::Cosine),
   (43.288, 0., Interpolation::Hold),
   (44.434, 1., Interpolation::Cosine),
-  (44.934, 0., Interpolation::Cosine),
-  (45.097, 0.25, Interpolation::Cosine),
-  (45.597, 0., Interpolation::Hold)
+  (44.934, 0., Interpolation::Hold),
+  (45.197, 0.5, Interpolation::Cosine),
+  (45.397, 0., Interpolation::Hold),
+  (45.457, 0.5, Interpolation::Cosine),
+  (45.957, 0., Interpolation::Hold),
+  (46.82, 0.25, Interpolation::Cosine),
+  (47.32, 0., Interpolation::Cosine)
 ]);
