@@ -438,4 +438,10 @@ simple_animation!(animation_logo_mask, f32, 0., [
 ]);
 
 simple_animation!(animation_jitter, f32, 0., [
+  (40.169, 0.25, Interpolation::Cosine),
+  (40.669, 0., Interpolation::Hold),
+  (41.489, 0.25, Interpolation::Cosine),
+  (41.989, 0., Interpolation::Hold),
+  (42.788, 0.25, Interpolation::Cosine),
+  (43.288, 0., Interpolation::Hold)
 ]);
