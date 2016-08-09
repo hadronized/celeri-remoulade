@@ -414,6 +414,12 @@ simple_animation!(animation_color_mask, Color, one(), [
   (29., one(), Interpolation::Cosine),
   (30.5, zero(), Interpolation::Cosine),
   (32.5, one(), Interpolation::Hold),
+  (48.4, Color::new(0.667, 0.408, 0.224), Interpolation::Cosine),
+  (48.6, Color::new(0.659, 0.22, 0.231), Interpolation::Cosine),
+  (48.8, Color::new(0.392, 0.137, 0.404), Interpolation::Cosine),
+  (49., Color::new(0.404, 0.137, 0.392), Interpolation::Cosine),
+  (49.2, Color::new(0.212, 0.302, 0.2), Interpolation::Cosine),
+  (49.3, one(), Interpolation::Hold),
 
   (1000., zero(), Interpolation::Hold)
 ]);
@@ -431,7 +437,7 @@ simple_animation!(animation_curvature, f32, 0., [
   (26.58, 1., Interpolation::Hold),
   (30.5, 0., Interpolation::Hold),
 
-  (100., 1., Interpolation::Hold)
+  (1000., 1., Interpolation::Hold)
 ]);
 
 simple_animation!(animation_logo_mask, f32, 0., [
@@ -455,7 +461,21 @@ simple_animation!(animation_jitter, f32, 0., [
   (47.6, 1., Interpolation::Cosine),
   (47.9, 0., Interpolation::Hold),
   (47.9, 0.5, Interpolation::Cosine),
-  (48.4, 0., Interpolation::Hold)
-  //(48.1, 0.5, Interpolation::Cosine),
-  //(48.3, 0., Interpolation::Hold)
+  (48.4, 0., Interpolation::Hold),
+  (49.8, 0.5, Interpolation::Cosine),
+  (50.3, 0., Interpolation::Hold),
+  (50.52, 1., Interpolation::Cosine),
+  (50.82, 0., Interpolation::Cosine),
+  (50.88, 1., Interpolation::Linear),
+  (51., 0.25, Interpolation::Linear),
+  (51.2, 1., Interpolation::Linear),
+  (51.4, 0.5, Interpolation::Linear),
+  (51.6, 1., Interpolation::Linear),
+  (51.8, 0.5, Interpolation::Linear),
+  (52., 1., Interpolation::Linear),
+  (52.2, 0.5, Interpolation::Linear),
+  (53.4, 1., Interpolation::Linear),
+  (53.6, 0.5, Interpolation::Linear),
+  
+  (1000., 1., Interpolation::Hold)
 ]);
