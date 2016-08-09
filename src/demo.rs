@@ -451,5 +451,11 @@ simple_animation!(animation_jitter, f32, 0., [
   (45.457, 0.5, Interpolation::Cosine),
   (45.957, 0., Interpolation::Hold),
   (46.82, 0.25, Interpolation::Cosine),
-  (47.32, 0., Interpolation::Cosine)
+  (47.32, 0., Interpolation::Hold),
+  (47.6, 1., Interpolation::Cosine),
+  (47.9, 0., Interpolation::Hold),
+  (47.9, 0.5, Interpolation::Cosine),
+  (48.4, 0., Interpolation::Hold)
+  //(48.1, 0.5, Interpolation::Cosine),
+  //(48.3, 0., Interpolation::Hold)
 ]);
