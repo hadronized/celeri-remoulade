@@ -44,7 +44,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
   // tus logo
   let tus_logo = load_rgba_texture(TUS_LOGO_PATH, &luminance::Sampler::default()).unwrap();
   let tus_logo_quad = {
-    let dim = logo.size;
+    let dim = tus_logo.size;
     let logo_h = LOGO_SCALE * dim.1 as f32 / h as f32;
     let logo_w = logo_h * dim.0 as f32 / dim.1 as f32 * (h as f32 / w as f32);
     Tessellation::new(Mode::TriangleStrip,
@@ -60,7 +60,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
   // evoke logo
   let evoke_logo = load_rgba_texture(EVOKE_LOGO_PATH, &luminance::Sampler::default()).unwrap();
   let evoke_logo_quad = {
-    let dim = logo.size;
+    let dim = evoke_logo.size;
     let logo_h = LOGO_SCALE * dim.1 as f32 / h as f32;
     let logo_w = logo_h * dim.0 as f32 / dim.1 as f32 * (h as f32 / w as f32);
     Tessellation::new(Mode::TriangleStrip,
@@ -269,14 +269,14 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
       // render the logo
       &ShadingCommand::new(&quad_tex_program,
                            |&(ref tex, ref mask)| {
-                             tex.update(&logo);
+                             tex.update(if t <= 10. { &tus_logo } else { &evoke_logo });
                              mask.update(logo_mask);
                            },
                            vec![
                             RenderCommand::new(Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement)),
                                                false,
                                                |_| {},
-                                               &logo_quad,
+                                               if t <= 10. { &tus_logo_quad} else { &evoke_logo_quad},
                                                1,
                                                None)
                            ]),
@@ -465,6 +465,9 @@ simple_animation!(animation_curvature, f32, 0., [
 ]);
 
 simple_animation!(animation_logo_mask, f32, 0., [
+  (0., 0., Interpolation::Cosine),
+  (2.35, 1., Interpolation::Cosine),
+  (4.69, 0., Interpolation::Hold),
   (82.4, 0., Interpolation::Cosine),
   (88., 1., Interpolation::Hold),
   (100., 0., Interpolation::Hold)
