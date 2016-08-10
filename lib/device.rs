@@ -47,8 +47,6 @@ impl Device {
 
     // compute the length of soundtrack
     let l = (al_buffer.get_size() * 8 / (al_buffer.get_channels() * al_buffer.get_bits())) as f32 / al_buffer.get_frequency() as f32;
-    println!("duration: {}", l);
-
     Device {
       length: l,
       al_device: al_device,

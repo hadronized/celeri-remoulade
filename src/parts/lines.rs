@@ -1,7 +1,7 @@
 use ion::anim::{AnimParam, Key, Interpolation, Sampler};
-use ion::transform::{Position, Transform};
-use luminance::{Mode, UniformUpdate};
-use luminance_gl::gl33::{RenderCommand, Tessellation, Uniform};
+use ion::transform::Position;
+use luminance::Mode;
+use luminance_gl::gl33::{RenderCommand, Tessellation};
 use procedural::{lerp_color, noise2};
 
 use shaders::lines::LinesUniforms;

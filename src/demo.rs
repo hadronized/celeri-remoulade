@@ -6,11 +6,10 @@ use ion::objects::{new_cube, new_plane};
 use ion::projection::perspective;
 use ion::texture::load_rgba_texture;
 use ion::window::{self, Action, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
-use luminance::{self, Dim2, Equation, Factor, Flat, Filter, M44, Mode, RGBA32F};
+use luminance::{self, Dim2, Equation, Factor, Flat, M44, Mode, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot, Tessellation};
 use nalgebra::{Quaternion, Rotate, one, zero};
 use std::f32;
-use time;
 
 use gui::ProgressBar;
 use procedural::gaussian;
