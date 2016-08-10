@@ -441,6 +441,9 @@ simple_animation!(animation_curvature, f32, 0., [
 ]);
 
 simple_animation!(animation_logo_mask, f32, 0., [
+  (82.4, 0., Interpolation::Cosine),
+  (88., 1., Interpolation::Hold),
+  (100., 0., Interpolation::Hold)
 ]);
 
 simple_animation!(animation_jitter, f32, 0., [
