@@ -28,7 +28,8 @@ use shaders::skybox::*;
 
 pub const DEMO_TITLE: &'static str = "Céleri Rémoulade";
 const TRACK_PATH: &'static str = "data/track/evoke16.ogg";
-const LOGO_PATH: &'static str = "data/logo.png";
+const TUS_LOGO_PATH: &'static str = "data/tus.png";
+const EVOKE_LOGO_PATH: &'static str = "data/evoke.png";
 const FOVY: f32 = f32::consts::FRAC_PI_4;
 const ZNEAR: f32 = 0.1;
 const ZFAR: f32 = 200.;
@@ -40,19 +41,38 @@ const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 const LOGO_SCALE: f32 = 1.;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _: Scroll) -> Result<Box<FnMut() -> bool>, String> {
-  // logo
-  let logo = load_rgba_texture(LOGO_PATH, &luminance::Sampler::default()).unwrap();
-  let dim = logo.size;
-  let logo_h = LOGO_SCALE * dim.1 as f32 / h as f32;
-  let logo_w = logo_h * dim.0 as f32 / dim.1 as f32 * (h as f32 / w as f32);
-  let logo_quad = Tessellation::new(Mode::TriangleStrip,
-                                    &[
-                                      [-logo_w,  logo_h, 0., 0.],
-                                      [-logo_w, -logo_h, 0., 1.],
-                                      [ logo_w,  logo_h, 1., 0.],
-                                      [ logo_w, -logo_h, 1., 1.],
-                                    ],
-                                    None);
+  // tus logo
+  let tus_logo = load_rgba_texture(TUS_LOGO_PATH, &luminance::Sampler::default()).unwrap();
+  let tus_logo_quad = {
+    let dim = logo.size;
+    let logo_h = LOGO_SCALE * dim.1 as f32 / h as f32;
+    let logo_w = logo_h * dim.0 as f32 / dim.1 as f32 * (h as f32 / w as f32);
+    Tessellation::new(Mode::TriangleStrip,
+                      &[
+                        [-logo_w,  logo_h, 0., 0.],
+                        [-logo_w, -logo_h, 0., 1.],
+                        [ logo_w,  logo_h, 1., 0.],
+                        [ logo_w, -logo_h, 1., 1.],
+                      ],
+                      None)
+  };
+
+  // evoke logo
+  let evoke_logo = load_rgba_texture(EVOKE_LOGO_PATH, &luminance::Sampler::default()).unwrap();
+  let evoke_logo_quad = {
+    let dim = logo.size;
+    let logo_h = LOGO_SCALE * dim.1 as f32 / h as f32;
+    let logo_w = logo_h * dim.0 as f32 / dim.1 as f32 * (h as f32 / w as f32);
+    Tessellation::new(Mode::TriangleStrip,
+                      &[
+                        [-logo_w,  logo_h, 0., 0.],
+                        [-logo_w, -logo_h, 0., 1.],
+                        [ logo_w,  logo_h, 1., 0.],
+                        [ logo_w, -logo_h, 1., 1.],
+                      ],
+                      None)
+  };
+
   let quad_tex_program = new_quad_tex_program().unwrap();
 
   let back_buffer = Framebuffer::default((w, h));
@@ -424,7 +444,11 @@ simple_animation!(animation_color_mask, Color, one(), [
   (1000., zero(), Interpolation::Hold)
 ]);
 
-simple_animation!(animation_chromatic_aberration, f32, 0., [
+simple_animation!(animation_chromatic_aberration, f32, 1., [
+  (48.4, 50., Interpolation::Cosine),
+  (48.6, 100., Interpolation::Cosine),
+  (49.3, 80., Interpolation::Cosine),
+  (49.5, 1., Interpolation::Cosine)
 ]);
 
 simple_animation!(animation_curvature, f32, 0., [
