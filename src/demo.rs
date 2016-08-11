@@ -380,6 +380,16 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
       Key::new(53.42, Position::new(-6.4448338, -10.596287, -31.767954), Interpolation::Hold),
       Key::new(56.08, Position::new(-2.0092435, -19.31865, -46.489563), Interpolation::Hold),
       Key::new(58.72, Position::new(-13.492348, -0.21469511, -0.5490991), Interpolation::Hold),
+      Key::new(61.41, Position::new(-1.2251066, -1.6221172, -11.082351), Interpolation::Hold),
+      Key::new(61.41, Position::new(-1.2251066, -1.6221172, -11.082351), Interpolation::CatmullRom),
+      Key::new(66.64, Position::new(-7.22588, -6.5452375, -20.286064), Interpolation::CatmullRom),
+      Key::new(69.3, Position::new(-15.474363, -15.269267, -37.927525), Interpolation::CatmullRom),
+      Key::new(71.9, Position::new(-18.928495, -18.621408, -47.8879), Interpolation::Hold),
+      Key::new(71.9, Position::new(-3.1743865, -1.778953, -17.477242), Interpolation::Hold),
+      Key::new(74.54, Position::new(-12.93884, -2.7613199, -20.194298), Interpolation::Hold),
+      Key::new(77.21, Position::new(-14.817427, -0.2119409, -2.3797803), Interpolation::Hold),
+      Key::new(79.857, Position::new(-10.017522, -0.18722507, -15.92794), Interpolation::Linear),
+      Key::new(82.458, Position::new(-9.439825, -0.32472718, 2.9556136), Interpolation::Hold),
 
       Key::new(1000., Position::new(0., 0., 0.), Interpolation::Hold),
   ]);
@@ -411,6 +421,16 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
       Key::new(53.42, Orientation::new_with_quaternion(Quaternion::new(0.8813842, 0.38028312, 0.24007483, 0.14457017)), Interpolation::Hold),
       Key::new(56.08, Orientation::new_with_quaternion(Quaternion::new(0.57743776, -0.75408494, 0.25846455, -0.17635232)), Interpolation::Hold),
       Key::new(58.72, Orientation::new_with_quaternion(Quaternion::new(0.00010929146, 0.038559392, 0.98586094, -0.16304341)), Interpolation::Hold),
+      Key::new(61.41, Orientation::new_with_quaternion(Quaternion::new(0.28388846, 0.002401169, 0.9581121, -0.03763964)), Interpolation::Linear),
+      Key::new(66.64, Orientation::new_with_quaternion(Quaternion::new(-0.048513204, -0.54295856, 0.8383526, 0.000022783875)), Interpolation::Linear),
+      Key::new(69.3, Orientation::new_with_quaternion(Quaternion::new(0.15716724, 0.49389282, 0.81797147, -0.24956651)), Interpolation::Linear),
+      Key::new(71.9, Orientation::new_with_quaternion(Quaternion::new(-0.013377346, -0.014172793, 0.83046573, -0.55671835)), Interpolation::Hold),
+      Key::new(71.9, Orientation::new_with_quaternion(Quaternion::new(0.44844958, 0.06743773, 0.62837124, -0.6320482)), Interpolation::Hold),
+      Key::new(74.54, Orientation::new_with_quaternion(Quaternion::new(0.46801212, -0.88361067, -0.005931719, -0.01238607)), Interpolation::Hold),
+      Key::new(77.21, Orientation::new_with_quaternion(Quaternion::new(0.5093975, -0.017146185, 0.85788715, 0.06508009)), Interpolation::Hold),
+      Key::new(79.857, Orientation::new_with_quaternion(Quaternion::new(0.9990175, 0.04241703, -0.012645834, 0.0014209902)), Interpolation::Linear),
+      Key::new(82.458, Orientation::new_with_quaternion(Quaternion::new(0.9998423, -0.008315526, -0.015410957, 0.0023272862)), Interpolation::Cosine),
+      Key::new(88., Orientation::new_with_quaternion(Quaternion::new(0.74239457, -0.66299695, 0.08556984, -0.044163752)), Interpolation::Hold),
 
       Key::new(1000., Orientation::new_with_quaternion(Quaternion::new(0.7219135, -0.6905788, -0.040629696, 0.017061736)), Interpolation::Hold),
   ]);
@@ -449,18 +469,42 @@ simple_animation!(animation_color_mask, Color, one(), [
   (49.2, Color::new(0.404, 0.137, 0.392), Interpolation::Cosine),
   (49.4, Color::new(0.212, 0.302, 0.2), Interpolation::Cosine),
   (49.5, one(), Interpolation::Hold),
+  (50.86, Color::new(10., 10., 10.), Interpolation::Cosine),
+  (51.16, one(), Interpolation::Hold),
+  (56., Color::new(10., 10., 10.), Interpolation::Cosine),
+  (56.3, one(), Interpolation::Hold),
   (59.24, Color::new(0.667, 0.408, 0.224), Interpolation::Cosine),
   (59.44, Color::new(0.659, 0.22, 0.231), Interpolation::Cosine),
   (59.64, Color::new(0.392, 0.137, 0.404), Interpolation::Cosine),
   (59.84, Color::new(0.404, 0.137, 0.392), Interpolation::Cosine),
   (60.04, Color::new(0.212, 0.302, 0.2), Interpolation::Cosine),
   (60.14, one(), Interpolation::Hold),
+  (61.41, Color::new(10., 10., 10.), Interpolation::Cosine),
+  (61.71, one(), Interpolation::Hold),
+  (66.64, Color::new(10., 10., 10.), Interpolation::Cosine),
+  (66.94, one(), Interpolation::Hold),
+  (69.3, Color::new(10., 10., 10.), Interpolation::Cosine),
+  (69.6, one(), Interpolation::Hold),
   (69.83, Color::new(0.667, 0.408, 0.224), Interpolation::Cosine),
   (70.03, Color::new(0.659, 0.22, 0.231), Interpolation::Cosine),
   (70.23, Color::new(0.392, 0.137, 0.404), Interpolation::Cosine),
   (70.43, Color::new(0.404, 0.137, 0.392), Interpolation::Cosine),
   (70.63, Color::new(0.212, 0.302, 0.2), Interpolation::Cosine),
   (70.83, one(), Interpolation::Hold),
+  (71.92, Color::new(10., 10., 10.), Interpolation::Cosine),
+  (72.22, one(), Interpolation::Hold),
+  (74.54, Color::new(10., 10., 10.), Interpolation::Cosine),
+  (74.84, one(), Interpolation::Hold),
+  (77.21, Color::new(10., 10., 10.), Interpolation::Cosine),
+  (77.51, one(), Interpolation::Hold),
+  (79.84, Color::new(10., 10., 10.), Interpolation::Cosine),
+  (80.14, one(), Interpolation::Hold),
+  (81.09, Color::new(10., 10., 10.), Interpolation::Cosine),
+  (81.39, one(), Interpolation::Hold),
+  (81.79, Color::new(10., 10., 10.), Interpolation::Cosine),
+  (82.09, one(), Interpolation::Hold),
+  (82.11, Color::new(10., 10., 10.), Interpolation::Cosine),
+  (82.41, one(), Interpolation::Hold),
 
   (1000., zero(), Interpolation::Hold)
 ]);
@@ -490,8 +534,7 @@ simple_animation!(animation_curvature, f32, 0., [
   (26.58, 1., Interpolation::Hold),
   (30.5, 0., Interpolation::Hold),
   (53.42, 1., Interpolation::Hold),
-
-  (1000., 1., Interpolation::Hold)
+  (79.857, 0., Interpolation::Hold)
 ]);
 
 simple_animation!(animation_logo_mask, f32, 0., [
