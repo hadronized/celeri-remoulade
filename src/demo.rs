@@ -372,9 +372,14 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
       Key::new(26.58, Position::new(-11.472534, -0.21655303, -10.727055), Interpolation::Hold),
       Key::new(26.58, Position::new(-13.754858, -0.83931583, -8.627309), Interpolation::Linear),
       Key::new(30.5, Position::new(-13.801769, -12.471959, -35.783722), Interpolation::Hold),
-      Key::new(30.5, Position::new(-13.516925, -0.12198037, 3.7145808), Interpolation::Linear),
-      Key::new(34.98, Position::new(-13.370566, -0.16462153, -15.884601), Interpolation::Linear),
-      Key::new(50.710, Position::new(-14.52016, -0.24098906, -34.941505), Interpolation::Hold),
+      Key::new(30.5, Position::new(-15.2049265, -0.05895257, 2.3693516), Interpolation::Linear),
+      Key::new(46.13, Position::new(-14.473871, -0.2145091, -53.807293), Interpolation::Hold),
+      Key::new(46.13, Position::new(-10.902057, -0.25155377, -23.405884), Interpolation::Hold),
+      Key::new(48.6, Position::new(-19.058836, 0.54255205, -24.021812), Interpolation::Hold),
+      Key::new(49.8, Position::new(-10.902057, -0.25155377, -23.405884), Interpolation::Hold),
+      Key::new(53.42, Position::new(-6.4448338, -10.596287, -31.767954), Interpolation::Hold),
+      Key::new(56.08, Position::new(-2.0092435, -19.31865, -46.489563), Interpolation::Hold),
+      Key::new(58.72, Position::new(-13.492348, -0.21469511, -0.5490991), Interpolation::Hold),
 
       Key::new(1000., Position::new(0., 0., 0.), Interpolation::Hold),
   ]);
@@ -398,9 +403,14 @@ fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
       Key::new(26.58, Orientation::new_with_quaternion(Quaternion::new(0.1815621, -0.86639136, -0.44462457, 0.13674732)), Interpolation::Hold),
       Key::new(26.58, Orientation::new_with_quaternion(Quaternion::new(0.0052094115, -0.3049593, 0.95047086, -0.05977425)), Interpolation::Linear),
       Key::new(30.5, Orientation::new_with_quaternion(Quaternion::new(-0.081626624, 0.2947656, 0.92182285, -0.23808531)), Interpolation::Hold),
-      Key::new(30.5, Orientation::new_with_quaternion(Quaternion::new(0.003683282, 0.042291965, -0.99909514, 0.0012446779)), Interpolation::Linear),
-      Key::new(34.98, Orientation::new_with_quaternion(Quaternion::new(0.0038565996, -0.15595156, -0.9877539, 0.00049236434)), Interpolation::Linear),
-      Key::new(50.710, Orientation::new_with_quaternion(Quaternion::new(-0.024977501, 0.18687618, -0.9820563, 0.003384897)), Interpolation::Hold),
+      Key::new(30.5, Orientation::new_with_quaternion(Quaternion::new(-0.0024910248, 0.025089426, 0.9995367, -0.017006047)), Interpolation::Linear),
+      Key::new(46.13, Orientation::new_with_quaternion(Quaternion::new(-0.0031180063, 0.99904823, -0.042286336, 0.009937723)), Interpolation::Hold),
+      Key::new(46.13, Orientation::new_with_quaternion(Quaternion::new(0.018262265, -0.00049790984, 0.9960936, 0.08638898)), Interpolation::Hold),
+      Key::new(48.6, Orientation::new_with_quaternion(Quaternion::new(0.8868639, -0.29733792, 0.20397416, -0.28883544)), Interpolation::Hold),
+      Key::new(49.8, Orientation::new_with_quaternion(Quaternion::new(0.018262265, -0.00049790984, 0.9960936, 0.08638898)), Interpolation::Hold),
+      Key::new(53.42, Orientation::new_with_quaternion(Quaternion::new(0.8813842, 0.38028312, 0.24007483, 0.14457017)), Interpolation::Hold),
+      Key::new(56.08, Orientation::new_with_quaternion(Quaternion::new(0.57743776, -0.75408494, 0.25846455, -0.17635232)), Interpolation::Hold),
+      Key::new(58.72, Orientation::new_with_quaternion(Quaternion::new(0.00010929146, 0.038559392, 0.98586094, -0.16304341)), Interpolation::Hold),
 
       Key::new(1000., Orientation::new_with_quaternion(Quaternion::new(0.7219135, -0.6905788, -0.040629696, 0.017061736)), Interpolation::Hold),
   ]);
@@ -464,10 +474,10 @@ simple_animation!(animation_chromatic_aberration, f32, 1., [
   (59.44, 20., Interpolation::Cosine),
   (60.04, 50., Interpolation::Cosine),
   (60.24, 1., Interpolation::Hold),
-  (69.83, 50., Interpolation::Cosine),
-  (70.03, 20., Interpolation::Cosine),
-  (70.23, 50., Interpolation::Cosine),
-  (70.43, 1., Interpolation::Hold)
+  (69.73, 50., Interpolation::Cosine),
+  (69.83, 20., Interpolation::Cosine),
+  (70.13, 50., Interpolation::Cosine),
+  (70.33, 1., Interpolation::Hold)
 ]);
 
 simple_animation!(animation_curvature, f32, 0., [
@@ -479,6 +489,7 @@ simple_animation!(animation_curvature, f32, 0., [
   (26.58, 0.5, Interpolation::Hold),
   (26.58, 1., Interpolation::Hold),
   (30.5, 0., Interpolation::Hold),
+  (53.42, 1., Interpolation::Hold),
 
   (1000., 1., Interpolation::Hold)
 ]);
