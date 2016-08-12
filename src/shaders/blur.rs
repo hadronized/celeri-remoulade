@@ -41,8 +41,6 @@ fn gen_str_kernel(kernel: &[f32], horiz: bool) -> String {
 
   let _ = write!(&mut out, "vec3 color = vec3(0., 0., 0.);\n");
 
-  info!("reducing blur kernel of size {} to {}", kernel.len(), offsets.len());
-
   let l = (kernel.len() as f32 / 2.) as i32;
 
   for i in 0..(kernel.len() / 4) {
