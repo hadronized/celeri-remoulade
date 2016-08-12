@@ -11,7 +11,7 @@ use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, S
 use nalgebra::{Quaternion, Rotate, one, zero};
 use std::f32;
 
-use gui::ProgressBar;
+//use gui::ProgressBar;
 use procedural::gaussian;
 
 // parts
@@ -32,11 +32,11 @@ const EVOKE_LOGO_PATH: &'static str = "data/evoke.png";
 const FOVY: f32 = f32::consts::FRAC_PI_4;
 const ZNEAR: f32 = 0.1;
 const ZFAR: f32 = 200.;
-const CAMERA_YAW_SENSITIVITY: f32 = 0.01;
-const CAMERA_PITCH_SENSITIVITY: f32 = 0.01;
-const CAMERA_STRAFE_SENSITIVITY: f32 = 0.1;
-const CAMERA_FORWARD_SENSITIVITY: f32 = 0.1;
-const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
+//const CAMERA_YAW_SENSITIVITY: f32 = 0.01;
+//const CAMERA_PITCH_SENSITIVITY: f32 = 0.01;
+//const CAMERA_STRAFE_SENSITIVITY: f32 = 0.1;
+//const CAMERA_FORWARD_SENSITIVITY: f32 = 0.1;
+//const CAMERA_UPWARD_SENSITIVITY: f32 = 0.1;
 const LOGO_SCALE: f32 = 1.;
 
 pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _: Scroll) -> Result<Box<FnMut() -> bool>, String> {
@@ -79,9 +79,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
   let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let pp_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   
-  // gui elements
-  let gui_const_color_program = new_gui_const_color_program().unwrap();
-  let time_panel = ProgressBar::new([0., (h - 10) as f64], [w as f64, 10.], [0.25, 0.8, 0.25]);
+  // // gui elements
+  // let gui_const_color_program = new_gui_const_color_program().unwrap();
+  // let time_panel = ProgressBar::new([0., (h - 10) as f64], [w as f64, 10.], [0.25, 0.8, 0.25]);
 
   let bloom_kernel: Vec<_> = (-21..22).map(|i| gaussian(0., 6., 0.8 * i as f32)).collect();
   let hblur_program = new_blur_program(&bloom_kernel, true).unwrap();
@@ -106,10 +106,10 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
   let skybox = new_cube();
   let skybox_program = new_skybox_program().unwrap();
 
-  let mut cursor_at = [0., 0.]; // last cursor position known
-  let mut cursor_down_at = [0., 0.]; // position where the cursor was pressed
-  let mut cursor_left_down = false;
-  let mut cursor_right_down = false;
+  //let mut cursor_at = [0., 0.]; // last cursor position known
+  //let mut cursor_down_at = [0., 0.]; // position where the cursor was pressed
+  //let mut cursor_left_down = false;
+  //let mut cursor_right_down = false;
 
   // animation
   let mut anim_cam = animation_camera(w, h);
@@ -121,54 +121,57 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
 
   let mut dev = Device::new(TRACK_PATH);
 
+  dev.toggle(); // play the goddamn demo
+
   Ok(Box::new(move || {
     let t = dev.playback_cursor();
 
-    while let Ok((mouse_button, action)) = mouse.try_recv() {
-      match (mouse_button, action) {
-        (MouseButton::Button1, Action::Press) => {
-          cursor_left_down = true;
-          cursor_down_at = cursor_at;
-        },
-        (MouseButton::Button1, Action::Release) => {
-          cursor_left_down = false;
+    // while let Ok((mouse_button, action)) = mouse.try_recv() {
+    //   match (mouse_button, action) {
+    //     (MouseButton::Button1, Action::Press) => {
+    //       cursor_left_down = true;
+    //       cursor_down_at = cursor_at;
+    //     },
+    //     (MouseButton::Button1, Action::Release) => {
+    //       cursor_left_down = false;
 
-          if time_panel.is_cursor_in(cursor_down_at) {
-            let c = cursor_at[0] as f32 / w as f32;
-            dev.set_cursor(c.min(1.).max(0.));
-          }
-        },
-        (MouseButton::Button2, Action::Press) => {
-          cursor_right_down = true;
-          cursor_down_at = cursor_at;
-        },
-        (MouseButton::Button2, Action::Release) => {
-          cursor_right_down = false;
-        },
-        _ => {}
-      }
-    }
+    //       if time_panel.is_cursor_in(cursor_down_at) {
+    //         let c = cursor_at[0] as f32 / w as f32;
+    //         dev.set_cursor(c.min(1.).max(0.));
+    //       }
+    //     },
+    //     (MouseButton::Button2, Action::Press) => {
+    //       cursor_right_down = true;
+    //       cursor_down_at = cursor_at;
+    //     },
+    //     (MouseButton::Button2, Action::Release) => {
+    //       cursor_right_down = false;
+    //     },
+    //     _ => {}
+    //   }
+    // }
 
-    while let Ok(cursor_now) = mouse_mv.try_recv() {
-      if time_panel.is_cursor_in(cursor_down_at) && cursor_left_down {
-        let c = cursor_at[0] as f32 / w as f32;
-        dev.set_cursor(c.min(1.).max(0.));
-      } else {
-        handle_camera_cursor(&mut camera, cursor_left_down, cursor_right_down, cursor_now, &mut cursor_at);
-      }
+    // while let Ok(cursor_now) = mouse_mv.try_recv() {
+    //   if time_panel.is_cursor_in(cursor_down_at) && cursor_left_down {
+    //     let c = cursor_at[0] as f32 / w as f32;
+    //     dev.set_cursor(c.min(1.).max(0.));
+    //   } else {
+    //     handle_camera_cursor(&mut camera, cursor_left_down, cursor_right_down, cursor_now, &mut cursor_at);
+    //   }
 
-      cursor_at = cursor_now;
-    }
+    //   cursor_at = cursor_now;
+    // }
 
     while let Ok((key, action)) = kbd.try_recv() {
       if action == Action::Release {
         if key == window::Key::Escape {
           return false;
         }
-      } else {
-        handle_camera_keys(&mut camera, key, t);
-        handle_device_keys(&mut dev, key);
       }
+      // } else {
+      //   handle_camera_keys(&mut camera, key, t);
+      //   handle_device_keys(&mut dev, key);
+      // }
     }
 
     // TODO: comment that line to enable debug camera
@@ -281,76 +284,77 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
                            ]),
 
       // render the GUI overlay
-      &ShadingCommand::new(&gui_const_color_program,
-                           |_| {},
-                           vec![
-                             time_panel.back_render_cmd(w as f32, h as f32),
-                             time_panel.cursor_render_cmd(w as f32, h as f32, t / dev.playback_length())
-                           ])
+      // &ShadingCommand::new(&gui_const_color_program,
+      //                      |_| {},
+      //                      vec![
+      //                        time_panel.back_render_cmd(w as f32, h as f32),
+      //                        time_panel.cursor_render_cmd(w as f32, h as f32, t / dev.playback_length())
+      //                      ])
     ]).run();
 
-    true
+    // leave the demo if we pass over 90 seconds of runtime
+    t <= 90.
   }))
 }
 
-fn handle_camera_cursor(camera: &mut Entity<M44>, left_down: bool, right_down: bool, cursor_now: [f64; 2], cursor_at: &[f64; 2]) {
-  let rel = [cursor_now[0] - cursor_at[0], cursor_now[1] - cursor_at[1]];
-
-  if left_down {
-    camera.transform = camera.orient(Y_AXIS, rel[0] as f32 * CAMERA_YAW_SENSITIVITY);
-    camera.transform = camera.orient(X_AXIS, rel[1] as f32 * CAMERA_PITCH_SENSITIVITY);
-  }
-
-  if right_down {
-    camera.transform = camera.orient(Z_AXIS, rel[0] as f32 * CAMERA_YAW_SENSITIVITY);
-  }
-}
-
-fn handle_camera_keys(camera: &mut Entity<M44>, key: window::Key, t: f32) {
-  match key {
-    window::Key::A => {
-      let left = camera.transform.orientation.inverse_rotate(&(X_AXIS * CAMERA_STRAFE_SENSITIVITY));
-      camera.transform = camera.translate(left);
-    },
-    window::Key::D => {
-      let right = camera.transform.orientation.inverse_rotate(&(X_AXIS * -CAMERA_STRAFE_SENSITIVITY));
-      camera.transform = camera.translate(right);
-    },
-    window::Key::W => {
-      let forward = camera.transform.orientation.inverse_rotate(&(Z_AXIS * CAMERA_FORWARD_SENSITIVITY));
-      camera.transform = camera.translate(forward);
-    },
-    window::Key::S => {
-      let backward = camera.transform.orientation.inverse_rotate(&(Z_AXIS * -CAMERA_FORWARD_SENSITIVITY));
-      camera.transform = camera.translate(backward);
-    },
-    window::Key::R => {
-      let upward = camera.transform.orientation.inverse_rotate(&(Y_AXIS * -CAMERA_UPWARD_SENSITIVITY));
-      camera.transform = camera.translate(upward);
-    },
-    window::Key::F => {
-      let downward = camera.transform.orientation.inverse_rotate(&(Y_AXIS * CAMERA_UPWARD_SENSITIVITY));
-      camera.transform = camera.translate(downward);
-    },
-    window::Key::C => { // print camera information on stdout (useful for animation keys)
-      let p = camera.transform.translation;
-      let q = camera.transform.orientation.quaternion();
-      info!("position: Key::new({}, Position::new({}, {}, {})),", t, p[0], p[1], p[2]);
-      info!("orientation: Key::new({}, Orientation::new_with_quaternion(Quaternion::new({}, {}, {}, {}))),", t, q[0], q[1], q[2], q[3]);
-      info!("");
-    },
-    _ => {}
-  }
-}
-
-fn handle_device_keys(dev: &mut Device, key: window::Key) {
-  match key {
-    window::Key::Space => {
-      dev.toggle();
-    },
-    _ => {}
-  }
-}
+// fn handle_camera_cursor(camera: &mut Entity<M44>, left_down: bool, right_down: bool, cursor_now: [f64; 2], cursor_at: &[f64; 2]) {
+//   let rel = [cursor_now[0] - cursor_at[0], cursor_now[1] - cursor_at[1]];
+// 
+//   if left_down {
+//     camera.transform = camera.orient(Y_AXIS, rel[0] as f32 * CAMERA_YAW_SENSITIVITY);
+//     camera.transform = camera.orient(X_AXIS, rel[1] as f32 * CAMERA_PITCH_SENSITIVITY);
+//   }
+// 
+//   if right_down {
+//     camera.transform = camera.orient(Z_AXIS, rel[0] as f32 * CAMERA_YAW_SENSITIVITY);
+//   }
+// }
+// 
+// fn handle_camera_keys(camera: &mut Entity<M44>, key: window::Key, t: f32) {
+//   match key {
+//     window::Key::A => {
+//       let left = camera.transform.orientation.inverse_rotate(&(X_AXIS * CAMERA_STRAFE_SENSITIVITY));
+//       camera.transform = camera.translate(left);
+//     },
+//     window::Key::D => {
+//       let right = camera.transform.orientation.inverse_rotate(&(X_AXIS * -CAMERA_STRAFE_SENSITIVITY));
+//       camera.transform = camera.translate(right);
+//     },
+//     window::Key::W => {
+//       let forward = camera.transform.orientation.inverse_rotate(&(Z_AXIS * CAMERA_FORWARD_SENSITIVITY));
+//       camera.transform = camera.translate(forward);
+//     },
+//     window::Key::S => {
+//       let backward = camera.transform.orientation.inverse_rotate(&(Z_AXIS * -CAMERA_FORWARD_SENSITIVITY));
+//       camera.transform = camera.translate(backward);
+//     },
+//     window::Key::R => {
+//       let upward = camera.transform.orientation.inverse_rotate(&(Y_AXIS * -CAMERA_UPWARD_SENSITIVITY));
+//       camera.transform = camera.translate(upward);
+//     },
+//     window::Key::F => {
+//       let downward = camera.transform.orientation.inverse_rotate(&(Y_AXIS * CAMERA_UPWARD_SENSITIVITY));
+//       camera.transform = camera.translate(downward);
+//     },
+//     window::Key::C => { // print camera information on stdout (useful for animation keys)
+//       let p = camera.transform.translation;
+//       let q = camera.transform.orientation.quaternion();
+//       info!("position: Key::new({}, Position::new({}, {}, {})),", t, p[0], p[1], p[2]);
+//       info!("orientation: Key::new({}, Orientation::new_with_quaternion(Quaternion::new({}, {}, {}, {}))),", t, q[0], q[1], q[2], q[3]);
+//       info!("");
+//     },
+//     _ => {}
+//   }
+// }
+// 
+// fn handle_device_keys(dev: &mut Device, key: window::Key) {
+//   match key {
+//     window::Key::Space => {
+//       dev.toggle();
+//     },
+//     _ => {}
+//   }
+// }
 
 fn animation_camera<'a>(w: u32, h: u32) -> Cont<'a, Entity<M44>> {
   // position keys

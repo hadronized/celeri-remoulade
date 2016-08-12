@@ -10,9 +10,9 @@ doc = true
 
 [features]
 # No feature by default.
-default = ["debug_camera"]
-# Switch on to enable debugging camera (freefly)
-debug_camera = []
+default = ["release"]
+release = [] # enable this for release
+
 
 [dependencies]
 luminance = "0.6.2"

@@ -37,8 +37,8 @@ pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove, Scroll) -> Res
   window.make_current();
   if cfg!(feature = "release") {
     window.set_cursor_mode(CursorMode::Disabled);
-  } else {
     window.set_key_polling(true);
+  } else {
     window.set_cursor_pos_polling(true);
     window.set_mouse_button_polling(true);
     window.set_scroll_polling(true);
