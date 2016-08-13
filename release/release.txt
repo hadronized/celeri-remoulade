@@ -1,0 +1,33 @@
+
+
+       ___________  ____  ____  __________    
+      /           \/    \/    \/          \   
+      \__      ___/     /     /    _______/   
+        /     /  /     /     /          \     
+  .--- /     /  /    _/     /\_____     / ---.
+  |   /     /  /           /           /     |
+  |   \____/   \__________/\__________/      |
+  |                                          |
+  |   T H E   U N D E A D   S C E N E R S    |
+  |__________________________________________|
+  |                                          |
+  |      -       Céleri Rémoulade     -      |
+  |                                          |
+  |   ------------------------------------   |
+  |    Code      : ................. phaazon |
+  |    Musique   : ................. phaazon |
+  |    Direction : ................. phaazon |
+  |    TUS logo  : ............... lycan/LNX |
+  |   ------------------------------------   |
+  |                                          |
+  |   phaazon would like to thank sam for    |
+  |   his precious help for optimizing the   |
+  |   gaussian blur, as always. Thank you to |
+  |   nical for proving a Windows hardware   |
+  |   (the Windows port wouldn't have been   |
+  |   possible without it). Finally, thank   |
+  |   you to all my friends and...           |
+  |                                          |
+  |   ... keep the vibe! ;)                  |
+  |__________________________________________|
+
