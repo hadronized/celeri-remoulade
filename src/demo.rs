@@ -4,7 +4,7 @@ use ion::device::Device;
 use ion::entity::*;
 use ion::objects::{new_cube, new_plane};
 use ion::projection::perspective;
-use ion::texture::load_rgba_texture;
+use ion::texture::{load_rgba_texture, save_rgba_texture};
 use ion::window::{self, Action, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
 use luminance::{self, Dim2, Equation, Factor, Flat, M44, Mode, RGBA32F};
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot, Tessellation};
@@ -78,6 +78,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
   let hblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let vblur_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   let pp_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
+  let record_buffer = Framebuffer::<Flat, Dim2, Slot<_, _, RGBA32F>, ()>::new((w, h), 0).unwrap();
   
   // // gui elements
   // let gui_const_color_program = new_gui_const_color_program().unwrap();
@@ -250,7 +251,7 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
                            ])
     ]).run();
 
-    Pipeline::new(&back_buffer, [0., 0., 0., 1.], vec![
+    Pipeline::new(&record_buffer, [0., 0., 0., 1.], vec![
       // apply the post-process shader and output directly into the back buffer
       &ShadingCommand::new(&lines_pp,
                            |&(ref tex, ref ires, ref chromatic_aberration, ref color_mask)| {
@@ -291,6 +292,9 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
       //                        time_panel.cursor_render_cmd(w as f32, h as f32, t / dev.playback_length())
       //                      ])
     ]).run();
+
+    // dump frames 
+    save_rgba_texture(&record_buffer.color_slot.texture, format!("/tmp/evoke_{}.png", t));
 
     // leave the demo if we pass over 90 seconds of runtime
     t <= 90.

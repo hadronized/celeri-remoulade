@@ -18,3 +18,16 @@ pub fn load_rgba_texture<P>(path: P, sampler: &Sampler) -> ImageResult<TextureIm
 
   Ok(tex)
 }
+
+/// Save an RGBA image on disk.
+pub fn save_rgba_texture<P>(texture: &TextureImage<RGBA32F>, path: P) where P: AsRef<Path> {
+  let texels = texture.get_raw_texels();
+  let (w, h) = texture.size;
+  let mut output = Vec::with_capacity((w * h) as usize);
+
+  for texel in &texels {
+    output.push((texel * 255.) as u8);
+  }
+
+  image::save_buffer(path, &output, w, h, image::ColorType::RGBA(8));
+}
