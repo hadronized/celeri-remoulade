@@ -40,13 +40,19 @@ void main() {\n\
   color.b += texture(tex, v_co + vec2(off.x, off.y)).b;\n\
 
   // vignette\n\
-  color *= mix(1., .5, pow(length(v_screen_co), 2.));\n\
+  color.rgb *= mix(1., .5, pow(length(v_screen_co), 2.));\n\
 
-  // output
+  // output\n\
   frag = color * vec4(color_mask, 1.);\n\
 
-  // gamma correction
+  // gamma correction\n\
   frag.rgb = pow(frag.rgb, vec3(1. / 2.2));\n\
+
+  // enforce alpha = 1\n\
+  frag.a = 1.;\n\
+
+  // clamp the output\n\
+  frag.rgb = clamp(frag.rgb, vec3(0., 0., 0.), vec3(1., 1., 1.));\n\
 }";
 
 pub type LinesPP<'a> = Program<(Uniform<&'a Texture<Flat, Dim2, RGBA32F>>,
