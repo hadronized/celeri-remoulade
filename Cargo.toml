@@ -15,10 +15,8 @@ release = [] # enable this for release
 
 
 [dependencies]
-#luminance = "0.6.2"
-#luminance-gl = "0.5.3"
-luminance = { path = "../../luminance-rs" }
-luminance-gl = { path = "../../luminance-gl-rs" }
+luminance = "0.6.3"
+luminance-gl = "0.5.4"
 gl = "0.5.2"
 glfw = "0.3.0"
 image = "0.10.1"
