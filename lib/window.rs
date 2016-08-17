@@ -35,6 +35,7 @@ pub fn with_window<Init: Fn(u32, u32, Keyboard, Mouse, MouseMove, Scroll) -> Res
   };
 
   window.make_current();
+
   if cfg!(feature = "release") {
     window.set_cursor_mode(CursorMode::Disabled);
   }
