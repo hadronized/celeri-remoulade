@@ -7,6 +7,7 @@ use ion::projection::perspective;
 use ion::texture::{load_rgba_texture, save_rgba_texture};
 use ion::window::{self, Action, Keyboard, Mouse, MouseButton, MouseMove, Scroll};
 use luminance::{self, Dim2, Equation, Factor, Flat, M44, Mode, RGBA32F};
+use luminance::pipeline::SomeShadingCommand;
 use luminance_gl::gl33::{Framebuffer, Pipeline, RenderCommand, ShadingCommand, Slot, Tessellation};
 use nalgebra::{Quaternion, Rotate, one, zero};
 use std::f32;
@@ -260,54 +261,60 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
                            ])
     ]).run();
 
-    Pipeline::new(&record_buffer, [0., 0., 0., 1.], vec![
-      // apply the post-process shader and output directly into the back buffer
-      &ShadingCommand::new(&lines_pp,
-                           |&(ref tex, ref ires, ref chromatic_aberration, ref color_mask)| {
-                             tex.update(&pp_buffer.color_slot.texture);
-                             ires.update([1. / w as f32, 1. / h as f32]);
-                             chromatic_aberration.update(caberration);
-                             color_mask.update(*cmask.as_ref());
-                           },
-                           vec![
-                             RenderCommand::new(None,
-                                                true,
-                                                |_| {},
-                                                &plane.object,
-                                                1,
-                                                None)
-                           ]),
+    // apply the post-process shader
+    let pp_cmd = ShadingCommand::new(&lines_pp,
+                                     |&(ref tex, ref ires, ref chromatic_aberration, ref color_mask)| {
+                                       tex.update(&pp_buffer.color_slot.texture);
+                                       ires.update([1. / w as f32, 1. / h as f32]);
+                                       chromatic_aberration.update(caberration);
+                                       color_mask.update(*cmask.as_ref());
+                                     },
+                                     vec![
+                                       RenderCommand::new(None,
+                                                          true,
+                                                          |_| {},
+                                                          &plane.object,
+                                                          1,
+                                                          None)
+                                     ]);
+    // render the logo
+    let t2 = t;
+    let logo_cmd = ShadingCommand::new(&quad_tex_program,
+                                       |&(ref tex, ref mask)| {
+                                         tex.update(if t2 <= 10. { &tus_logo } else { &evoke_logo });
+                                         mask.update(logo_mask);
+                                       },
+                                       vec![
+                                        RenderCommand::new(Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement)),
+                                                           false,
+                                                           |_| {},
+                                                           if t <= 10. { &tus_logo_quad} else { &evoke_logo_quad},
+                                                           1,
+                                                           None)
+                                       ]);
+    // render the GUI overlay
+    //let gui_overlay_cmd = ShadingCommand::new(&gui_const_color_program,
+    //                                          |_| {},
+    //                                          vec![
+    //                                            time_panel.back_render_cmd(w as f32, h as f32),
+    //                                            time_panel.cursor_render_cmd(w as f32, h as f32, t / dev.playback_length())
+    //                                          ]);
+    let mut shading_cmds: Vec<&SomeShadingCommand> = vec![&pp_cmd, &logo_cmd];
 
-      // render the logo
-      &ShadingCommand::new(&quad_tex_program,
-                           |&(ref tex, ref mask)| {
-                             tex.update(if t <= 10. { &tus_logo } else { &evoke_logo });
-                             mask.update(logo_mask);
-                           },
-                           vec![
-                            RenderCommand::new(Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement)),
-                                               false,
-                                               |_| {},
-                                               if t <= 10. { &tus_logo_quad} else { &evoke_logo_quad},
-                                               1,
-                                               None)
-                           ]),
-
-      // render the GUI overlay
-      // &ShadingCommand::new(&gui_const_color_program,
-      //                      |_| {},
-      //                      vec![
-      //                        time_panel.back_render_cmd(w as f32, h as f32),
-      //                        time_panel.cursor_render_cmd(w as f32, h as f32, t / dev.playback_length())
-      //                      ])
-    ]).run();
+    //if cfg!(feature = "record") {
+    //  shading_cmds.push(&gui_overlay_cmd);
+    //}
 
     if cfg!(feature = "record") {
+      Pipeline::new(&record_buffer, [0., 0., 0., 1.], shading_cmds).run();
+
       // dump frames 
       save_rgba_texture(&record_buffer.color_slot.texture, format!("record/{}.png", image_i));
 
       t += 1. / 60.; // increment time to target 60 FPS
       image_i += 1;
+    } else {
+      Pipeline::new(&back_buffer, [0., 0., 0., 1.], shading_cmds).run();
     }
 
     // leave the demo if we pass over 90 seconds of runtime
