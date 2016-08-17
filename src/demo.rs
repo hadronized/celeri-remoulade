@@ -120,14 +120,21 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
   let mut anim_logo_mask = animation_logo_mask();
   let mut anim_jitter = animation_jitter();
 
-  //let mut dev = Device::new(TRACK_PATH);
+  let mut dev = Device::new(TRACK_PATH);
 
-  //dev.toggle(); // play the goddamn demo
+  if cfg!(not(feature = "record")) {
+    dev.toggle(); // play the goddamn demo
+  }
 
   let mut t = 0.;
   let mut image_i = 1000;
+
   Ok(Box::new(move || {
-    info!("rendering {}%", 100. * t / 90.);
+    if cfg!(feature = "record") {
+      info!("rendering {}%", 100. * t / 90.);
+    } else {
+      t = dev.playback_cursor();
+    }
 
     // while let Ok((mouse_button, action)) = mouse.try_recv() {
     //   match (mouse_button, action) {
@@ -295,11 +302,13 @@ pub fn init(w: u32, h: u32, kbd: Keyboard, mouse: Mouse, mouse_mv: MouseMove, _:
       //                      ])
     ]).run();
 
-    // dump frames 
-    save_rgba_texture(&record_buffer.color_slot.texture, format!("/home/phaazon/dev/demo/evoke16/record/{}.png", image_i));
+    if cfg!(feature = "record") {
+      // dump frames 
+      save_rgba_texture(&record_buffer.color_slot.texture, format!("record/{}.png", image_i));
 
-    t += 1. / 60.; // increment time to target 60 FPS
-    image_i += 1;
+      t += 1. / 60.; // increment time to target 60 FPS
+      image_i += 1;
+    }
 
     // leave the demo if we pass over 90 seconds of runtime
     t <= 90.

@@ -12,7 +12,7 @@ doc = true
 # No feature by default.
 default = ["release"]
 release = [] # enable this for release
-
+record = [] # enable this to record the demo to disk (in the local record/ folder)
 
 [dependencies]
 luminance = "0.6.3"
